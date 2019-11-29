@@ -12,6 +12,18 @@ type UserController struct {
 	beego.Controller
 }
 
+func (u *UserController) GetUser(){
+	//u.Ctx.WriteString("getUser")
+	u.Data["json"] = map[string]string{"user":"liyang"}
+    u.ServeJSON()
+}
+
+func (u *UserController) GetUser2(){
+	//u.Ctx.WriteString("getUser")
+	u.Data["json"] = map[string]string{"user2":"liyang2"}
+	u.ServeJSON()
+}
+
 // @Title CreateUser
 // @Description create users
 // @Param	body		body 	models.User	true		"body for user content"

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/astaxie/beego/logs"
 	"os"
 	_ "poplar/routers"
 	"strings"
@@ -20,10 +21,21 @@ func configureEnv(){
 	}
 	beego.BConfig.RunMode = runMode
 }
+//配置路由路径大小写敏感度
+func configRouterCase(){
+	if ok,err := beego.AppConfig.Bool("routercase");err == nil{
+		beego.BConfig.RouterCaseSensitive = ok
+	}
+}
 
 func main() {
 	//配置环境
 	configureEnv()
+	//配置路由路径敏感度
+	configRouterCase()
+
+	//打印环境变量
+	logs.Info("环境变量：",beego.BConfig.RunMode)
 	//启动服务
-	beego.Run()
+	beego.Run("0.0.0.0:8000")
 }
