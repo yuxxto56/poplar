@@ -1,3 +1,6 @@
+// 公共方法
+// @kancun Team
+// @Contact ly@900sui.com
 package functions
 
 import (
@@ -19,7 +22,7 @@ func HashSha1(str string) string{
 	sha1Inst := sha1.New()
 	_,err := sha1Inst.Write([]byte(str))
 	if err != nil{
-	log.Fatal(err.Error())
+    	log.Fatal(err.Error())
 	}
 	result := sha1Inst.Sum([]byte(""))
 	return fmt.Sprintf("%x",result)
