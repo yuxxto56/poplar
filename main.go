@@ -22,7 +22,7 @@ func configureEnv(){
 	beego.BConfig.RunMode = runMode
 }
 //配置路由路径大小写敏感度
-func configRouterCase(){
+func configureRouterCase(){
 	if ok,err := beego.AppConfig.Bool("routercase");err == nil{
 		beego.BConfig.RouterCaseSensitive = ok
 	}
@@ -32,7 +32,7 @@ func main() {
 	//配置环境
 	configureEnv()
 	//配置路由路径敏感度
-	configRouterCase()
+	configureRouterCase()
 
 	//打印环境变量
 	logs.Info("环境变量：",beego.BConfig.RunMode)
