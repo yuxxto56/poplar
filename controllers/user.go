@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"poplar/common/functions"
 	models2 "poplar/common/models"
 
 	"github.com/astaxie/beego"
@@ -13,7 +14,8 @@ type UserController struct {
 }
 
 func (u *UserController) GetUser(){
-	//u.Ctx.WriteString("getUser")
+	u.Ctx.WriteString(functions.MarkPhone("13916379354","+"))
+
 	u.Data["json"] = map[string]string{"user":"liyang"}
     u.ServeJSON()
 }

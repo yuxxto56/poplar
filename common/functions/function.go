@@ -9,12 +9,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 )
 //md5加密
 func HashMd5(str string) string{
 	md5Inst := md5.New()
 	md5Inst.Write([]byte(str))
-	result := Md5Inst.Sum([]byte(""))
+	result := md5Inst.Sum([]byte(""))
 	return fmt.Sprintf("%x",result)
 }
 //sha1加密
@@ -40,4 +42,32 @@ func Base64Decode(str string) string{
 	//转换成byte类型
 	bytes,_ := base64.StdEncoding.DecodeString(str)
 	return string(bytes[:])
+}
+
+//验证手机号
+func CheckPhone(phone string) bool{
+	regular := "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$"
+	reg := regexp.MustCompile(regular)
+	return reg.MatchString(phone)
+}
+//验证邮箱
+func CheckEmail(email string) bool{
+	pattern := `^[0-9a-z][_.0-9a-z-]{0,31}@([0-9a-z][0-9a-z-]{0,30}[0-9a-z]\.){1,4}[a-z]{2,4}$`
+	reg := regexp.MustCompile(pattern)
+	return reg.MatchString(email)
+}
+
+//马赛克手机号
+func MarkPhone(phone string,re ...string) string{
+	if len(phone) != 11 {
+		return phone
+	}
+	var replaceMark string
+	if len(re) == 0{
+		replaceMark = strings.Repeat("*",5)
+	}else{
+		replaceMark = strings.Repeat(string(re[0]),5)
+	}
+	replace := phone[3:8]
+	return strings.Replace(phone,replace,replaceMark,1)
 }
