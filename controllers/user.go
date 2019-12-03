@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"poplar/common/functions"
 	models2 "poplar/common/models"
 
 	"github.com/astaxie/beego"
@@ -14,10 +13,11 @@ type UserController struct {
 }
 
 func (u *UserController) GetUser(){
-	u.Ctx.WriteString(functions.MarkPhone("13916379354","+"))
+	str := beego.AppConfig.String("db::dbtype")
+	u.Ctx.WriteString(str)
+	//u.Data["json"] = map[string]string{"user":"liyang"}
+    //u.ServeJSON()
 
-	u.Data["json"] = map[string]string{"user":"liyang"}
-    u.ServeJSON()
 }
 
 func (u *UserController) GetUser2(){
