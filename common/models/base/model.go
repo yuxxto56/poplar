@@ -3,12 +3,13 @@ package base
 import (
 	"fmt"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"reflect"
 	"strings"
 )
-//定义常量
-var T_PREFIX = beego.AppConfig.String("db::prefix")
+//定义变量
+var T_PREFIX = beego.AppConfig.String("db.prefix")
 
 //定义Model结构体
 type Model struct {
@@ -17,6 +18,7 @@ type Model struct {
 	limit []interface{}
 	orderBy []string
 	where map[string]interface{}
+	field  string
 }
 
 //操作另一张表,表名不需要扩展
@@ -25,7 +27,8 @@ func (m *Model) Table(table string) *Model{
      return m
 }
 
-//map[string]interface{"id":1,"name":[]string["in","1,2,3"]})
+//条件查询
+//map[string]interface{"id":1,"name":[]string{"in","1,2,3"}})
 func (m *Model) Where(param map[string]interface{}) *Model{
     if len(param) == 0{
     	return m
@@ -34,7 +37,10 @@ func (m *Model) Where(param map[string]interface{}) *Model{
 	for k,v := range param{
 		if reflect.TypeOf(v).String() == "[]string"{
 			vs := v.([]string)
-			m.where[k+"__"+strings.ToLower(vs[0])] = strings.Split(vs[1],",")
+			if strings.Contains(vs[1],","){
+				vs[1] = "("+vs[1]+")"
+			}
+			m.where[k+"_"+strings.ToLower(vs[0])] = vs[1]
 		}else{
 			m.where[k] = v
 		}
@@ -69,6 +75,17 @@ func (m *Model) OrderBy(params ...string) *Model{
 		 }
 	 }
 	 return m
+}
+
+//查询的字段
+//使用示例 Field([]string{"name","age"})
+func (m *Model) Field(param ...[]string) *Model{
+	if len(param) == 0 {
+		m.field = "*"
+	}else{
+		m.field = strings.TrimRight(strings.Join(param[0],","),",")
+	}
+	return m
 }
 
 //新增数据
@@ -124,20 +141,46 @@ func (m *Model) Insert(param map[string]interface{})(int,error){
 	return int(LastId), err
 }
 
-func (m *Model) Find(){
 
+//查询
+func (m *Model) Find() map[string]interface{}{
+   var field string
+   if m.field == ""{
+	   field = "*"
+   }else{
+   	   field = m.field
+   }
+   var where string
+   if len(m.where) != 0{
+	   for i,v := range m.where{
+	   	   v4 := v.(string)
+	   	   if strings.Contains(i,"_"){
+	   	   	  is := strings.Split(i,"_")
+	   	   	  where += is[0]+" "+is[1]+" "+v4+" AND"
+		   }else{
+		   	  where += i+"="+v4+" AND"
+		   }
+	   }
+	   where = strings.TrimRight(where," AND")
+   }
+   sql := fmt.Sprintf("SELECT %s FROM %s WHERE %s LIMIT 1",field,m.table,where)
+   var res []orm.Params
+   _,err := m.o.Raw(sql).Values(&res)
+   if err != nil{
+   	  logs.Error("Sql:",sql," Error,",err.Error())
+   }
+   return res[0]
 }
 
 
 func NewModel(table string) *Model{
-    ormer := orm.NewOrm()
-    return &Model{
-		table: T_PREFIX+table,
-		o:         ormer,
+    //注册database
+	setDbDriver()
+	ormers := orm.NewOrm()
+	return &Model{
+		table:T_PREFIX+table,
+		o:ormers,
 	}
 }
 
-func init(){
-	setDriver()
-}
 
