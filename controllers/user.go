@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	models2 "poplar/common/models"
+	"poplar/common/models/base"
 	"poplar/common/toolLib"
 	"strconv"
+
 )
 
 // Operations about Users
@@ -20,10 +22,15 @@ type People struct {
 }
 
 func (u *UserController) GetUser(){
-	str := beego.AppConfig.String("db::dbtype")
-	u.Ctx.WriteString(str)
-	//u.Data["json"] = map[string]string{"user":"liyang"}
-    //u.ServeJSON()
+
+
+	m := base.NewModel("user")
+	maps := map[string]interface{}{"shop_name":"shanghai","id":[]string{"in","1,2,3"}}
+	m.Where(maps)
+
+	//u.Ctx.WriteString(str)
+	u.Data["json"] = maps
+    u.ServeJSON()
 
 }
 
@@ -42,7 +49,7 @@ func ( u *UserController ) Memcache()  {
 		incrKey string= "test05"
 	)
 
-	//测试结构体
+	//结构体
 	var inmdata = People{
 		Name:"lilei",
 		Age:18,
@@ -51,9 +58,9 @@ func ( u *UserController ) Memcache()  {
 	toolLib.MemMgr.SetGob(structKey, inmdata, 3600 )
 	var out People
 	toolLib.MemMgr.GetGob( structKey, &out )
-	fmt.Println( "结构体测试：", out )
+	fmt.Println( "测试结构体：", out )
 
-	//测试map
+
 	var mapdata map[string]string
 	mapdata = make(map[string]string)
 	mapdata["name"] = "xiaohua"
@@ -61,22 +68,22 @@ func ( u *UserController ) Memcache()  {
 	toolLib.MemMgr.SetGob(mapKey, mapdata, 3600 )
 	var outMapdata map[string]string
 	toolLib.MemMgr.GetGob( mapKey, &outMapdata )
-	fmt.Println( "map测试:", outMapdata )
+	fmt.Println( "测试Map:", outMapdata )
 
-	//字符串测试
-	toolLib.MemMgr.SetGob(strKey, "hello baby！", 3600)
+
+	toolLib.MemMgr.SetGob(strKey, "hello baby��", 3600)
 	var outStrData string
 	toolLib.MemMgr.GetGob(strKey, &outStrData)
-	fmt.Println("字符串测试:", outStrData)
+	fmt.Println("测试字符串:", outStrData)
 
-	//整数测试
+
 	var intData uint64 = 16
 	toolLib.MemMgr.SetGob(intKey, intData, 3600)
 	var outIntData uint64
 	toolLib.MemMgr.GetGob(intKey, &outIntData)
-	fmt.Println("整数测试:", outIntData)
+	fmt.Println("测试整数：", outIntData)
 
-	//递增测试
+
 	var incrData uint64 = 1
 	var outIncrData uint64
 	var incrYdata string = "20"
@@ -89,7 +96,7 @@ func ( u *UserController ) Memcache()  {
 		fmt.Println( err )
 	}
 	outIncrData, _ = strconv.ParseUint(string(byteOut), 10, 64)
-	fmt.Println("递增测试:", outIncrData )
+	fmt.Println("测试递增:", outIncrData )
 
 	u.Ctx.WriteString("end")
 }
