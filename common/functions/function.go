@@ -4,9 +4,11 @@
 package functions
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"regexp"
@@ -70,4 +72,22 @@ func MarkPhone(phone string,re ...string) string{
 	}
 	replace := phone[3:8]
 	return strings.Replace(phone,replace,replaceMark,1)
+}
+
+//使用gob编码将数据转化为byte切片
+func GobEncode2Byte(data interface{}) ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	enc := gob.NewEncoder(buf)
+	err := enc.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+//gob编码的byte切片数据转化为其他数据
+func GobDecodeByte(data []byte, to interface{}) error {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	return dec.Decode(to)
 }

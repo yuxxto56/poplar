@@ -2,14 +2,21 @@ package controllers
 
 import (
 	"encoding/json"
-	models2 "poplar/common/models"
-
+	"fmt"
 	"github.com/astaxie/beego"
+	models2 "poplar/common/models"
+	"poplar/common/toolLib"
+	"strconv"
 )
 
 // Operations about Users
 type UserController struct {
 	beego.Controller
+}
+
+type People struct {
+	Name string
+	Age  int
 }
 
 func (u *UserController) GetUser(){
@@ -24,6 +31,67 @@ func (u *UserController) GetUser2(){
 	//u.Ctx.WriteString("getUser")
 	u.Data["json"] = map[string]string{"user2":"liyang2"}
 	u.ServeJSON()
+}
+
+func ( u *UserController ) Memcache()  {
+	var (
+		structKey string = "test01"
+		mapKey string = "test02"
+		strKey string = "test03"
+		intKey string = "test04"
+		incrKey string= "test05"
+	)
+
+	//测试结构体
+	var inmdata = People{
+		Name:"lilei",
+		Age:18,
+	}
+
+	toolLib.MemMgr.SetGob(structKey, inmdata, 3600 )
+	var out People
+	toolLib.MemMgr.GetGob( structKey, &out )
+	fmt.Println( "结构体测试：", out )
+
+	//测试map
+	var mapdata map[string]string
+	mapdata = make(map[string]string)
+	mapdata["name"] = "xiaohua"
+	mapdata["age"] = "20"
+	toolLib.MemMgr.SetGob(mapKey, mapdata, 3600 )
+	var outMapdata map[string]string
+	toolLib.MemMgr.GetGob( mapKey, &outMapdata )
+	fmt.Println( "map测试:", outMapdata )
+
+	//字符串测试
+	toolLib.MemMgr.SetGob(strKey, "hello baby！", 3600)
+	var outStrData string
+	toolLib.MemMgr.GetGob(strKey, &outStrData)
+	fmt.Println("字符串测试:", outStrData)
+
+	//整数测试
+	var intData uint64 = 16
+	toolLib.MemMgr.SetGob(intKey, intData, 3600)
+	var outIntData uint64
+	toolLib.MemMgr.GetGob(intKey, &outIntData)
+	fmt.Println("整数测试:", outIntData)
+
+	//递增测试
+	var incrData uint64 = 1
+	var outIncrData uint64
+	var incrYdata string = "20"
+
+	toolLib.MemMgr.Set(incrKey, []byte(incrYdata), 3600 )
+	toolLib.MemMgr.Increment( incrKey, incrData )
+
+	byteOut, err  := toolLib.MemMgr.Get( incrKey )
+	if  err != nil{
+		fmt.Println( err )
+	}
+	outIncrData, _ = strconv.ParseUint(string(byteOut), 10, 64)
+	fmt.Println("递增测试:", outIncrData )
+
+	u.Ctx.WriteString("end")
 }
 
 // @Title CreateUser
