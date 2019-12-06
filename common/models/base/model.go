@@ -70,6 +70,7 @@ func (m *Model) OrderBy(params ...string) *Model{
 	 if len(params) == 0{
 	 	return m
 	 }
+	 m.orderBy = make([]string,len(params))
 	 for k,v := range params{
 	     v = strings.ToLower(v)
 		 m.orderBy[k] = v
@@ -161,7 +162,7 @@ func (m *Model) Select() []orm.Params{
 		for _,v := range m.orderBy{
 			orderBy += v+","
 		}
-		orderBy = strings.TrimRight(orderBy,",")
+		orderBy = "ORDER BY "+strings.TrimRight(orderBy,",")
 	}
 	var limit string
 	if len(m.limit)>0{
@@ -264,6 +265,35 @@ func (m *Model) Update() (int,error){
 	return int(num),err
 }
 
+//物理删除
+func (m *Model) Delete()(int,error){
+	var where string
+	if len(m.where) != 0{
+		for i,v := range m.where{
+			//如果为整型则转字符串类型
+			if vs, p := v.(int); p {
+				v = strconv.Itoa(vs)
+			}
+			if strings.Contains(i,"_"){
+				is := strings.Split(i,"_")
+				where += is[0]+" "+is[1]+" "+v.(string)+" AND "
+			}else{
+				where += i+"="+"'"+v.(string)+"'"+" AND "
+			}
+		}
+		where = "WHERE "+strings.TrimRight(where," AND")
+	}
+	sql := fmt.Sprintf("DELETE FROM %s %s",m.table,where)
+	m.sql = sql
+	sqlSource,err := m.o.Raw(sql).Exec()
+	if err != nil{
+		logs.Error("sql:",sql,"Error ",err.Error())
+		return 0,nil
+	}
+	num,_ := sqlSource.RowsAffected()
+	return int(num),err
+}
+
 //统计数据
 //使用示例
 //Count() 或 Count("id") //id为字段名
@@ -347,8 +377,6 @@ func (m *Model) GetLastSql(param ...interface{}) (string){
 //使用示例
 //NewModel("student")
 func NewModel(table string) *Model{
-    //注册database
-	//setDbDriver()
 	ormers := orm.NewOrm()
 	return &Model{
 		table:T_PREFIX+table,
