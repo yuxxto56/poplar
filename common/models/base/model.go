@@ -10,7 +10,9 @@ import (
 	"strings"
 )
 //定义变量
-var T_PREFIX = beego.AppConfig.String("db.prefix")
+var (
+	T_PREFIX = beego.AppConfig.String("db.prefix")
+)
 
 //定义Model结构体
 type Model struct {
@@ -287,7 +289,6 @@ func (m *Model) Count(param ...string) (int){
 		where = "WHERE "+strings.TrimRight(where," AND")
 	}
 	sql := fmt.Sprintf("SELECT COUNT(%s) FROM %s %s",co,m.table,where)
-	fmt.Println("sql",sql)
 	m.sql = sql
 	var maps []orm.Params
 	_,err := m.o.Raw(sql).Values(&maps)
