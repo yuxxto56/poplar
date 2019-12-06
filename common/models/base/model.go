@@ -141,22 +141,7 @@ func (m *Model) Select() []orm.Params{
 	}else{
 		field = m.field
 	}
-	var where string
-	if len(m.where) != 0{
-		for i,v := range m.where{
-			//如果为整型则转字符串类型
-			if vs, p := v.(int); p {
-				v = strconv.Itoa(vs)
-			}
-			if strings.Contains(i,"_"){
-				is := strings.Split(i,"_")
-				where += is[0]+" "+is[1]+" "+v.(string)+" AND "
-			}else{
-				where += i+"="+"'"+v.(string)+"'"+" AND "
-			}
-		}
-		where = "WHERE "+strings.TrimRight(where," AND")
-	}
+    where := m.whereString()
 	var orderBy string
 	if len(m.orderBy)>0{
 		for _,v := range m.orderBy{
@@ -194,22 +179,7 @@ func (m *Model) Find() map[string]interface{}{
    }else{
    	   field = m.field
    }
-   var where string
-   if len(m.where) != 0{
-	   for i,v := range m.where{
-	   	   //如果为整型则转字符串类型
-		   if vs, p := v.(int); p {
-			   v = strconv.Itoa(vs)
-		   }
-	   	   if strings.Contains(i,"_"){
-	   	   	  is := strings.Split(i,"_")
-	   	   	  where += is[0]+" "+is[1]+" "+v.(string)+" AND "
-		   }else{
-		   	  where += i+"="+"'"+v.(string)+"'"+" AND "
-		   }
-	   }
-	   where = "WHERE "+strings.TrimRight(where," AND")
-   }
+   where := m.whereString()
    sql := fmt.Sprintf("SELECT %s FROM %s %s LIMIT 1",field,m.table,where)
    m.sql = sql
    var res []orm.Params
@@ -238,22 +208,7 @@ func (m *Model) Update() (int,error){
 		updateStr += i+"="+"'"+v.(string)+"'"+","
 	}
 	updateStr = strings.TrimRight(updateStr,",")
-	var where string
-	if len(m.where) != 0{
-		for i,v := range m.where{
-			//如果为整型则转字符串类型
-			if vs, p := v.(int); p {
-				v = strconv.Itoa(vs)
-			}
-			if strings.Contains(i,"_"){
-				is := strings.Split(i,"_")
-				where += is[0]+" "+is[1]+" "+v.(string)+" AND "
-			}else{
-				where += i+"="+"'"+v.(string)+"'"+" AND "
-			}
-		}
-		where = "WHERE "+strings.TrimRight(where," AND")
-	}
+	where := m.whereString()
 	sql := fmt.Sprintf("UPDATE %s SET %s %s",m.table,updateStr,where)
 	m.sql = sql
 	sqlSource,err := m.o.Raw(sql).Exec()
@@ -267,21 +222,9 @@ func (m *Model) Update() (int,error){
 
 //物理删除
 func (m *Model) Delete()(int,error){
-	var where string
-	if len(m.where) != 0{
-		for i,v := range m.where{
-			//如果为整型则转字符串类型
-			if vs, p := v.(int); p {
-				v = strconv.Itoa(vs)
-			}
-			if strings.Contains(i,"_"){
-				is := strings.Split(i,"_")
-				where += is[0]+" "+is[1]+" "+v.(string)+" AND "
-			}else{
-				where += i+"="+"'"+v.(string)+"'"+" AND "
-			}
-		}
-		where = "WHERE "+strings.TrimRight(where," AND")
+	where := m.whereString()
+	if where == ""{
+		return 0,nil
 	}
 	sql := fmt.Sprintf("DELETE FROM %s %s",m.table,where)
 	m.sql = sql
@@ -299,25 +242,10 @@ func (m *Model) Delete()(int,error){
 //Count() 或 Count("id") //id为字段名
 func (m *Model) Count(param ...string) (int){
 	co := "*"
-	if len(param) != 0{
-        co = param[0]
+	if len(param) != 0 {
+		co = param[0]
 	}
-	var where string
-	if len(m.where) != 0{
-		for i,v := range m.where{
-			//如果为整型则转字符串类型
-			if vs, p := v.(int); p {
-				v = strconv.Itoa(vs)
-			}
-			if strings.Contains(i,"_"){
-				is := strings.Split(i,"_")
-				where += is[0]+" "+is[1]+" "+v.(string)+" AND "
-			}else{
-				where += i+"="+"'"+v.(string)+"'"+" AND "
-			}
-		}
-		where = "WHERE "+strings.TrimRight(where," AND")
-	}
+	where := m.whereString()
 	sql := fmt.Sprintf("SELECT COUNT(%s) FROM %s %s",co,m.table,where)
 	m.sql = sql
 	var maps []orm.Params
@@ -369,6 +297,28 @@ func (m *Model) GetLastSql(param ...interface{}) (string){
 	 	return ""
 	 }
 	 return m.sql
+}
+
+
+//组织where字符串
+func (m *Model) whereString()(string){
+	var where string = ""
+	if len(m.where) != 0{
+		for i,v := range m.where{
+			//如果为整型则转字符串类型
+			if vs, p := v.(int); p {
+				v = strconv.Itoa(vs)
+			}
+			if strings.Contains(i,"_"){
+				is := strings.Split(i,"_")
+				where += is[0]+" "+is[1]+" "+v.(string)+" AND "
+			}else{
+				where += i+"="+"'"+v.(string)+"'"+" AND "
+			}
+		}
+		where = "WHERE "+strings.TrimRight(where," AND")
+	}
+	return where
 }
 
 
