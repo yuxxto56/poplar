@@ -5,10 +5,13 @@ package base
 import (
 	"fmt"
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
+)
+
+var(
+	err error
 )
 
 //初始化驱动
@@ -19,9 +22,7 @@ func setDbDriver(){
 	maxIdle,_:= strconv.Atoi(beego.AppConfig.DefaultString("db.maxidle","10"))
 	maxConn,_:= strconv.Atoi(beego.AppConfig.DefaultString("db.maxconn","0"))
 	//设置注册数据库
-	derr := orm.RegisterDataBase("default", beego.AppConfig.String("db.type"), dataSource,maxIdle,maxConn)
-	if derr !=nil{
-		logs.Error("RegisterDataBase Error,Error is ",derr.Error());
-		return
+	if err == nil{
+		err = orm.RegisterDataBase("default", beego.AppConfig.String("db.type"), dataSource,maxIdle,maxConn)
 	}
 }

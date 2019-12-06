@@ -23,15 +23,13 @@ type People struct {
 
 func (u *UserController) GetUser(){
 
-
-	m := base.NewModel("user")
-	maps := map[string]interface{}{"shop_name":"shanghai","id":[]string{"in","1,2,3"}}
-	m.Where(maps)
-
-	//u.Ctx.WriteString(str)
-	u.Data["json"] = maps
-    u.ServeJSON()
-
+	m := base.NewModel("student")
+	//maps := map[string]interface{}{"id":1}
+	//res,_:= m.Where(maps).Data(map[string]interface{}{"name":"liii","age":38}).Update()
+	//map
+	res := m.Where(map[string]interface{}{"id":"1"}).Count("id")
+	fmt.Println("res",res)
+	u.ServeJSON()
 }
 
 func (u *UserController) GetUser2(){
