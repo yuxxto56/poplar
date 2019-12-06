@@ -11,6 +11,7 @@ import (
 func init() {
 	ns := beego.NewNamespace("/v1",
 		beego.NSRouter("/user",&controllers.UserController{},"*:GetUser"),
+		beego.NSRouter("/mem", &controllers.UserController{}, "*:Memcache"),
     )
 	ns1 := beego.NewNamespace("/v2",
 		beego.NSRouter("/user",&controllers.UserController{},"*:GetUser2"),

@@ -2,13 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/astaxie/beego"
 	models2 "poplar/common/models"
-	"poplar/common/models/base"
-	"poplar/common/toolLib"
-	"strconv"
 
+	"github.com/astaxie/beego"
 )
 
 // Operations about Users
@@ -16,21 +12,11 @@ type UserController struct {
 	beego.Controller
 }
 
-type People struct {
-	Name string
-	Age  int
-}
-
 func (u *UserController) GetUser(){
-
-
-	m := base.NewModel("user")
-	maps := map[string]interface{}{"shop_name":"shanghai","id":[]string{"in","1,2,3"}}
-	m.Where(maps)
-
-	//u.Ctx.WriteString(str)
-	u.Data["json"] = maps
-    u.ServeJSON()
+	str := beego.AppConfig.String("db::dbtype")
+	u.Ctx.WriteString(str)
+	//u.Data["json"] = map[string]string{"user":"liyang"}
+    //u.ServeJSON()
 
 }
 
@@ -38,67 +24,6 @@ func (u *UserController) GetUser2(){
 	//u.Ctx.WriteString("getUser")
 	u.Data["json"] = map[string]string{"user2":"liyang2"}
 	u.ServeJSON()
-}
-
-func ( u *UserController ) Memcache()  {
-	var (
-		structKey string = "test01"
-		mapKey string = "test02"
-		strKey string = "test03"
-		intKey string = "test04"
-		incrKey string= "test05"
-	)
-
-	//结构体
-	var inmdata = People{
-		Name:"lilei",
-		Age:18,
-	}
-
-	toolLib.MemMgr.SetGob(structKey, inmdata, 3600 )
-	var out People
-	toolLib.MemMgr.GetGob( structKey, &out )
-	fmt.Println( "测试结构体：", out )
-
-
-	var mapdata map[string]string
-	mapdata = make(map[string]string)
-	mapdata["name"] = "xiaohua"
-	mapdata["age"] = "20"
-	toolLib.MemMgr.SetGob(mapKey, mapdata, 3600 )
-	var outMapdata map[string]string
-	toolLib.MemMgr.GetGob( mapKey, &outMapdata )
-	fmt.Println( "测试Map:", outMapdata )
-
-
-	toolLib.MemMgr.SetGob(strKey, "hello baby��", 3600)
-	var outStrData string
-	toolLib.MemMgr.GetGob(strKey, &outStrData)
-	fmt.Println("测试字符串:", outStrData)
-
-
-	var intData uint64 = 16
-	toolLib.MemMgr.SetGob(intKey, intData, 3600)
-	var outIntData uint64
-	toolLib.MemMgr.GetGob(intKey, &outIntData)
-	fmt.Println("测试整数：", outIntData)
-
-
-	var incrData uint64 = 1
-	var outIncrData uint64
-	var incrYdata string = "20"
-
-	toolLib.MemMgr.Set(incrKey, []byte(incrYdata), 3600 )
-	toolLib.MemMgr.Increment( incrKey, incrData )
-
-	byteOut, err  := toolLib.MemMgr.Get( incrKey )
-	if  err != nil{
-		fmt.Println( err )
-	}
-	outIncrData, _ = strconv.ParseUint(string(byteOut), 10, 64)
-	fmt.Println("测试递增:", outIncrData )
-
-	u.Ctx.WriteString("end")
 }
 
 // @Title CreateUser
