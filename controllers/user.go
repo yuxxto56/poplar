@@ -6,7 +6,6 @@ import (
 	"poplar/common/models"
 	"poplar/common/toolLib"
 	"strconv"
-
 )
 
 // Operations about Users
@@ -20,10 +19,11 @@ type People struct {
 }
 
 func (u *UserController) GetUser(){
-	data := map[string]interface{}{"id":"2"}
+	fmt.Println(beego.AppConfig.String("db.host"))
+	//	data := map[string]interface{}{"id":"2"}
 	sdu := models.NewStudentModel()
-	result,_ := sdu.Model.Where(data).Delete()
-	fmt.Println("result:",result)
+	//result,_ := sdu.Model.Where(data).Delete()
+	//fmt.Println("result:",result)
 	fmt.Println("field:",sdu.Field.F_id,sdu.Field.F_name,sdu.Field.F_age)
 	u.ServeJSON()
 }
