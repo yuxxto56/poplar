@@ -333,9 +333,3 @@ func NewModel(table string) *Model{
 		o:ormers,
 	}
 }
-
-
-//初始化DataBase
-func init(){
-	setDbDriver()
-}
