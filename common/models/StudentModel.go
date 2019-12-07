@@ -1,6 +1,7 @@
 package models
 
 import (
+	"poplar/common/functions"
 	"poplar/common/models/base"
 )
 
@@ -17,9 +18,9 @@ type StudentModel struct {
 }
 //定义Model字段
 type StudentModelField struct {
-	F_id   string
-	F_name string
-	F_age  string
+	F_id   string `field:"id"`
+	F_name string `field:"name"`
+	F_age  string `field:"age"`
 }
 
 //实例
@@ -31,12 +32,8 @@ func NewStudentModel() *StudentModel{
 func init(){
 	student = &StudentModel{
 		Model:base.NewModel(table),
-		Field:StudentModelField{
-			F_id:"id",
-			F_name:"name",
-			F_age:"age",
-		},
 	}
+	functions.ReflectModel(student)
 }
 
 
