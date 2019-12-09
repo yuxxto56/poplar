@@ -18,7 +18,7 @@ var (
 type Model struct {
 	table string
 	o orm.Ormer
-	limit []interface{}
+	limit []int
 	orderBy []string
 	where map[string]interface{}
 	data  map[string]interface{}
@@ -55,7 +55,8 @@ func (m *Model) Where(param map[string]interface{}) *Model{
 
 //设置查询范围
 //使用示例 Limit(10) limit(0,10)
-func (m *Model) Limit(start interface{},limit ...interface{}) *Model{
+func (m *Model) Limit(start int,limit ...int) *Model{
+	m.limit = make([]int,2)
     if len(limit) == 0{
 	    m.limit[0] = start
 	}else{
@@ -134,7 +135,7 @@ func (m *Model) Insert()(int,error){
 }
 
 //查询多条数据
-func (m *Model) Select() []orm.Params{
+func (m *Model) Select() []map[string]interface{}{
 	var field string
 	if m.field == ""{
 		field = "*"
@@ -147,28 +148,36 @@ func (m *Model) Select() []orm.Params{
 		for _,v := range m.orderBy{
 			orderBy += v+","
 		}
-		orderBy = "ORDER BY "+strings.TrimRight(orderBy,",")
+		orderBy = " ORDER BY "+strings.TrimRight(orderBy,",")
 	}
 	var limit string
 	if len(m.limit)>0{
 		if len(m.limit) == 1{
-			limit = m.limit[0].(string)
+			    limit = strconv.Itoa(m.limit[0])
 		}else{
-            limit = m.limit[0].(string)+","+m.limit[1].(string)
+			if m.limit[1] == 0{
+				limit = strconv.Itoa(m.limit[0])
+			}else {
+				limit = strconv.Itoa(m.limit[0]) + "," + strconv.Itoa(m.limit[1])
+			}
 		}
-		limit = "LIMIT "+limit
+		limit = " LIMIT "+limit
 	}
-	sql := fmt.Sprintf("SELECT %s FROM %s %s %s %s",field,m.table,where,orderBy,limit)
+	sql := fmt.Sprintf("SELECT %s FROM %s %s%s%s",field,m.table,where,orderBy,limit)
 	m.sql = sql
 	var res []orm.Params
 	_,err := m.o.Raw(sql).Values(&res)
 	if err != nil{
 		logs.Error("Sql:",sql," Error,",err.Error())
 	}
-	if(len(res) == 0){
-		return res
+	var maps = make([]map[string]interface{},len(res))
+	if len(res)>0{
+		for i,v := range res{
+			fmt.Println("v",v)
+			maps[i] = v
+		}
 	}
-	return res
+	return maps
 }
 
 //查询单条数据
@@ -180,7 +189,7 @@ func (m *Model) Find() map[string]interface{}{
    	   field = m.field
    }
    where := m.whereString()
-   sql := fmt.Sprintf("SELECT %s FROM %s %s LIMIT 1",field,m.table,where)
+   sql := fmt.Sprintf("SELECT %s FROM %s%s LIMIT 1",field,m.table,where)
    m.sql = sql
    var res []orm.Params
    _,err := m.o.Raw(sql).Values(&res)
@@ -192,6 +201,7 @@ func (m *Model) Find() map[string]interface{}{
    }
    return res[0]
 }
+
 //更新
 func (m *Model) Update() (int,error){
 	//分析参数
@@ -200,7 +210,6 @@ func (m *Model) Update() (int,error){
 	}
 	var updateStr string
 	for i,v := range m.data{
-		//colsName += "`"+i+"`"+","
 		//如果为整型则转字符串类型
 		if vs, p := v.(int); p {
 			v = strconv.Itoa(vs)
@@ -209,7 +218,7 @@ func (m *Model) Update() (int,error){
 	}
 	updateStr = strings.TrimRight(updateStr,",")
 	where := m.whereString()
-	sql := fmt.Sprintf("UPDATE %s SET %s %s",m.table,updateStr,where)
+	sql := fmt.Sprintf("UPDATE %s SET %s%s",m.table,updateStr,where)
 	m.sql = sql
 	sqlSource,err := m.o.Raw(sql).Exec()
 	if err != nil{
@@ -226,7 +235,7 @@ func (m *Model) Delete()(int,error){
 	if where == ""{
 		return 0,nil
 	}
-	sql := fmt.Sprintf("DELETE FROM %s %s",m.table,where)
+	sql := fmt.Sprintf("DELETE FROM %s%s",m.table,where)
 	m.sql = sql
 	sqlSource,err := m.o.Raw(sql).Exec()
 	if err != nil{
@@ -246,7 +255,7 @@ func (m *Model) Count(param ...string) (int){
 		co = param[0]
 	}
 	where := m.whereString()
-	sql := fmt.Sprintf("SELECT COUNT(%s) FROM %s %s",co,m.table,where)
+	sql := fmt.Sprintf("SELECT COUNT(%s) FROM %s%s",co,m.table,where)
 	m.sql = sql
 	var maps []orm.Params
 	_,err := m.o.Raw(sql).Values(&maps)
@@ -316,11 +325,10 @@ func (m *Model) whereString()(string){
 				where += i+"="+"'"+v.(string)+"'"+" AND "
 			}
 		}
-		where = "WHERE "+strings.TrimRight(where," AND")
+		where = " WHERE "+strings.TrimRight(where," AND")
 	}
 	return where
 }
-
 
 //实例化Model引用
 //@param string table 表名称
