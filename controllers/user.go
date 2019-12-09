@@ -21,11 +21,11 @@ type People struct {
 
 func (u *UserController) GetUser(){
 	data := map[string]interface{}{"name":"lidayang","age":22}
-	sdu := models.NewStudentModel()
-
+	sdu := new(models.StudentModel).Init()
 	result := sdu.Insert(data)
 	//result,_ := sdu.Model.Where(data).Delete()
 	//fmt.Println("result:",result)
+	fmt.Println("lastSql:",sdu.Model.GetLastSql())
 	fmt.Println(fmt.Sprintf("timer:%s,result:%d",time.Now(),result))
 	u.ServeJSON()
 }

@@ -23,13 +23,19 @@ func (s *StudentModel) Insert(data map[string]interface{}) (int){
 	 return result
 }
 
+func (s *StudentModel) Init() *StudentModel{
+	functions.ReflectModel(&s.Field)
+	s.Model = base.NewModel(s.Field.T_table)
+	return s
+}
+
 //实例
-func NewStudentModel() *StudentModel{
+/*func NewStudentModel() *StudentModel{
 	models := &StudentModel{}
 	functions.ReflectModel(&models.Field)
 	models.Model = base.NewModel(models.Field.T_table)
 	return models
-}
+}*/
 
 
 

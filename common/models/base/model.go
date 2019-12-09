@@ -287,10 +287,10 @@ func (m *Model) RollBack()(*Model){
 //打印sql语句
 //使用示例
 //GetLastSql() 返回sql语句 GetLastSql(true) 打印控制台
-func (m *Model) GetLastSql(param ...interface{}) (string){
-	 var isPrint = true
+func (m *Model) GetLastSql(param ...bool) (string){
+	 var isPrint bool
 	 if len(param) != 0{
-	 	 isPrint = false
+	 	 isPrint = true
 	 }
 	 if isPrint{
 	 	fmt.Println("sql:",m.sql)
