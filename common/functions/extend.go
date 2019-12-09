@@ -15,7 +15,7 @@ func ReflectModel(structPtr interface{}){
 	for i := 0; i < rType.NumField(); i++ {
 		t := rType.Field(i)
 		f := rVal.Field(i)
-		key := t.Tag.Get("field")
+		key := t.Tag.Get("default")
 		if key == ""{
 			f.Set(reflect.ValueOf(""))
 		}else{

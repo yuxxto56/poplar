@@ -17,12 +17,12 @@ var(
 
 //初始化驱动
 func init(){
-	logs.Warning("test init driver.go file")
+	logs.Info("init driver.go start")
 	//设置驱动数据库连接参数
 	dataSource := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s",beego.AppConfig.String("db.user"),beego.AppConfig.String("db.pwd"),
 		beego.AppConfig.String("db.host"),beego.AppConfig.String("db.port"),beego.AppConfig.String("db.name"),beego.AppConfig.String("db.charset"))
 	//打印连接数据库参数
-	logs.Warning("databaseDriverConnect:",dataSource)
+	logs.Info("databaseDriverConnect:",dataSource)
 	maxIdle,_:= strconv.Atoi(beego.AppConfig.DefaultString("db.maxidle","10"))
 	maxConn,_:= strconv.Atoi(beego.AppConfig.DefaultString("db.maxconn","0"))
 	//设置注册数据库

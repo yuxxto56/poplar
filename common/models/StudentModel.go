@@ -5,12 +5,6 @@ import (
 	"poplar/common/models/base"
 )
 
-//表名
-const table = "student"
-
-//定义内部变量
-var student *StudentModel
-
 //定义Model
 type StudentModel struct {
 	Model *base.Model
@@ -18,22 +12,23 @@ type StudentModel struct {
 }
 //定义Model字段
 type StudentModelField struct {
-	F_id   string `field:"id"`
-	F_name string `field:"name"`
-	F_age  string `field:"age"`
+	T_table string `default:"student"`
+	F_id    string `default:"id"`
+	F_name  string `default:"name"`
+	F_age   string `default:"age"`
+}
+
+func (s *StudentModel) Insert(data map[string]interface{}) (int){
+     result,_ := s.Model.Data(data).Insert()
+	 return result
 }
 
 //实例
 func NewStudentModel() *StudentModel{
-	return student
-}
-
-//初始化
-func init(){
-	student = &StudentModel{
-		Model:base.NewModel(table),
-	}
-	functions.ReflectModel(student)
+	models := &StudentModel{}
+	functions.ReflectModel(&models.Field)
+	models.Model = base.NewModel(models.Field.T_table)
+	return models
 }
 
 
