@@ -173,7 +173,6 @@ func (m *Model) Select() []map[string]interface{}{
 	var maps = make([]map[string]interface{},len(res))
 	if len(res)>0{
 		for i,v := range res{
-			fmt.Println("v",v)
 			maps[i] = v
 		}
 	}

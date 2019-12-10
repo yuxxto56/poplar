@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
 	"poplar/common/models"
@@ -24,9 +25,12 @@ func (u *UserController) GetUser(){
 	sdu := new(models.StudentModel).Init()
 	//result := sdu.Insert(data)
 	result := sdu.GetById(1)
+
+	bytes,_ := json.Marshal(result)
+
 	//fmt.Println("result:",result)
 	fmt.Println("lastSql:",sdu.Model.GetLastSql())
-	fmt.Println(fmt.Sprintf("timer:%s,result:%d",time.Now(),result))
+	fmt.Println(fmt.Sprintf("timer:%s,result:%s",time.Now(),string(bytes[:])))
 	u.Data["json"] = result
 	u.ServeJSON()
 }
