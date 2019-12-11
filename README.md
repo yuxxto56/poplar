@@ -49,13 +49,13 @@ go build main.go
 # Project Structure
 ```cassandraql
 common #公共文件包
-|    |-functions #定义全局函数、方法体
-|    |-models #Model层
-|    |  |-base
-|    |     |-driver.go #注册数据库引擎
-|    |     |-model.go  #基Model
-|    |-logics #Logics层
-|    |-toolLib #第三方类库
+|  |-functions #定义全局函数、方法体
+|  |-models #Model层
+|  |  |-base
+|  |     |-driver.go #注册数据库引擎
+|  |     |-model.go  #基Model
+|  |-logics #Logics层
+|  |-toolLib #第三方类库
 conf #配置包
 |  |-app.conf #公共配置
 |  |-dev  #开发环境配置
