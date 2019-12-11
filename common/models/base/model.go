@@ -270,7 +270,7 @@ func (m *Model) SetInc() (int,error){
 	}
 	var setStr string
 	for i,v := range m.data{
-		//如果为整型则转字符串类型
+		//如果为字符串则转整型类型
 		if vs, p := v.(string); p {
 			v,_= strconv.Atoi(vs)
 		}
@@ -298,7 +298,7 @@ func (m *Model) SetDec() (int,error){
 	}
 	var setStr string
 	for i,v := range m.data{
-		//如果为整型则转字符串类型
+		//如果为字符串则转整型类型
 		if vs, p := v.(string); p {
 			v,_= strconv.Atoi(vs)
 		}
