@@ -239,6 +239,17 @@ func (u *UserController) Redis()  {
 	fmt.Println(toolLib.RedisGlobMgr.Zrank("zkey", "xiaoMing", "asc" ) )
 
 
+	fmt.Println("===测试切换db=========================================")
+	var redisDb2 = &toolLib.RedisMgr{}
+	toolLib.RedisInit("2", redisDb2 )
+	redisDb2.Set("keydb2", 111 )
+	redisDb2.Set("keydb2_1", 112 )
+	fmt.Print("测试切换db, 从db2拿数据：")
+	fmt.Println( redis.Int( redisDb2.Get("keydb2") )  )
+	//释放掉redisDb2
+	redisDb2 = nil
+
+
 	u.Ctx.WriteString("end")
 }
 

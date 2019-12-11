@@ -33,8 +33,12 @@ func (r *RedisConn) Close() {
 }
 
 func init()  {
-	RedisGlobMgr.ctx = context.Background()
-	dns := fmt.Sprintf("redis://%s:%s/%s", beego.AppConfig.String("redis.host"), beego.AppConfig.String("redis.port"), beego.AppConfig.String("redis.db") )
+	RedisInit( beego.AppConfig.String("redis.db"), RedisGlobMgr )
+}
+
+func RedisInit( db string, redism *RedisMgr )  {
+	redism.ctx = context.Background()
+	dns := fmt.Sprintf("redis://%s:%s/%s", beego.AppConfig.String("redis.host"), beego.AppConfig.String("redis.port"), db )
 	capacity, err := beego.AppConfig.Int("redis.capacity")
 	if err != nil{
 		capacity = 50
@@ -47,7 +51,7 @@ func init()  {
 	if err != nil{
 		idleTimeout = 600
 	}
-	RedisGlobMgr.pool = RedisGlobMgr.newRedisPool(dns, capacity, maxCap, time.Duration(idleTimeout)*time.Second )
+	redism.pool = RedisGlobMgr.newRedisPool(dns, capacity, maxCap, time.Duration(idleTimeout)*time.Second )
 }
 
 func (r *RedisMgr ) newRedisFactory(uri string) pools.Factory {
@@ -125,6 +129,7 @@ func (r *RedisMgr) GetConn() (*RedisConn, error) {
 func (r *RedisMgr ) PutConn(conn *RedisConn) {
 	r.pool.Put(conn)
 }
+
 
 //向一个key[队列]的尾部添加一个元素
 func (r *RedisMgr) Rpush( key string, data interface{} ) error {
