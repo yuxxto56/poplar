@@ -50,17 +50,18 @@ go build main.go
 ```cassandraql
 common #公共文件包
 |    |-functions #定义全局函数、方法体
-|    |-models #数据库基Model、表Model
+|    |-models #Model层
 |    |  |-base
 |    |     |-driver.go #注册数据库引擎
 |    |     |-model.go  #基Model
+|    |-logics #Logics层
 |    |-toolLib #第三方类库
 conf #配置包
 |  |-app.conf #公共配置
 |  |-dev  #开发环境配置
 |  |-prod #生产环境配置
 |  |-test #测试环境配置
-controllers #控制器包
+controllers #controller层
 routers #路由包
 main.go #入口文件
 ```
