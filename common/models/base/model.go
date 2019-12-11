@@ -261,6 +261,63 @@ func (m *Model) Count(param ...string) (int){
 	return num
 }
 
+//递增
+//使用示例 Data(map[string]interface{"age":1}).SetInc()
+func (m *Model) SetInc() (int,error){
+	//分析参数
+	if len(m.data) == 0{
+		return 0,nil
+	}
+	var setStr string
+	for i,v := range m.data{
+		//如果为整型则转字符串类型
+		if vs, p := v.(string); p {
+			v,_= strconv.Atoi(vs)
+		}
+		setStr += fmt.Sprintf("%s=%s+%d,",i,i,v.(int))
+	}
+	setStr = strings.TrimRight(setStr,",")
+	where := m.whereString()
+	sql := fmt.Sprintf("UPDATE %s SET %s%s",m.table,setStr,where)
+	m.sql = sql
+	sqlSource,err := m.o.Raw(sql).Exec()
+	if err != nil{
+		logs.Error("sql:",sql,"Error ",err.Error())
+		return 0,nil
+	}
+	num,_ := sqlSource.RowsAffected()
+	return int(num),err
+}
+
+//递减
+//使用示例 Data(map[string]interface{"age":1}).SetDec()
+func (m *Model) SetDec() (int,error){
+	//分析参数
+	if len(m.data) == 0{
+		return 0,nil
+	}
+	var setStr string
+	for i,v := range m.data{
+		//如果为整型则转字符串类型
+		if vs, p := v.(string); p {
+			v,_= strconv.Atoi(vs)
+		}
+		setStr += fmt.Sprintf("%s=if(%s>%d,%s-%d,0),",i,i,v.(int),i,v.(int))
+	}
+	setStr = strings.TrimRight(setStr,",")
+	where := m.whereString()
+	sql := fmt.Sprintf("UPDATE %s SET %s%s",m.table,setStr,where)
+	m.sql = sql
+	sqlSource,err := m.o.Raw(sql).Exec()
+	if err != nil{
+		logs.Error("sql:",sql,"Error ",err.Error())
+		return 0,nil
+	}
+	num,_ := sqlSource.RowsAffected()
+	return int(num),err
+}
+
+
 //事务开始
 func (m *Model) Begin()(*Model){
 	err := m.o.Begin()
