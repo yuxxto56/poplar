@@ -295,6 +295,7 @@ func ( r *RedisMgr) Get(key string ) (interface{}, error)  {
 
 }
 
+//设置某个hashKey名称的下的keyvalue值
 func ( r *RedisMgr ) Hset( hashKey string, key string, data interface{} ) error {
 	conn, err := r.GetConn()
 	if err != nil{
@@ -309,7 +310,7 @@ func ( r *RedisMgr ) Hset( hashKey string, key string, data interface{} ) error 
 
 }
 
-
+//得到某个hashKey名称下的key信息
 func (r *RedisMgr ) Hget( hashKey string, key string ) ( interface{}, error )  {
 	conn, err := r.GetConn()
 	if err != nil{
@@ -324,7 +325,7 @@ func (r *RedisMgr ) Hget( hashKey string, key string ) ( interface{}, error )  {
 	return conn.Do("HGET", hashKey, key )
 }
 
-//删除
+//删除haskKey下面的key建
 func ( r *RedisMgr) Hdel( hashKey string, key string ) error  {
 	conn, err := r.GetConn()
 	if err != nil{
@@ -338,7 +339,7 @@ func ( r *RedisMgr) Hdel( hashKey string, key string ) error  {
 	return  conn.Send("HDEL", hashKey, key )
 }
 
-//获取hash的长度
+//获取hashKey的长度
 func ( r *RedisMgr ) Hlen( hashKey string ) ( int, error )  {
 	conn, err := r.GetConn()
 	if err != nil{
@@ -352,8 +353,15 @@ func ( r *RedisMgr ) Hlen( hashKey string ) ( int, error )  {
 	return redis.Int( conn.Do("HLEN", hashKey ) )
 }
 
-//
-func ( r *RedisMgr) Hincrby ( hashKey string, key string, incrNum int ) error  {
+//给hashKey里面指定的key建增加incrNum
+//incrNum 必须为数字型
+func ( r *RedisMgr) Hincrby ( hashKey string, key string, incrNum interface{} ) error  {
+	switch incrNum.(type) {
+		case int32, int, int64, int8, int16, float64, float32:
+		default:
+			return errors.New("参数incrNum必须为数字类型")
+	}
+
 	conn, err := r.GetConn()
 	if err != nil{
 		return err
@@ -363,11 +371,20 @@ func ( r *RedisMgr) Hincrby ( hashKey string, key string, incrNum int ) error  {
 		r.PutConn(conn)
 	}()
 
+
 	return conn.Send("HINCRBY", hashKey, key, incrNum )
 
 }
 
+//给指定的key增加num
+//num 必须为数字型
 func ( r *RedisMgr) Incrnum( key string, num interface{} ) error {
+	switch num.(type) {
+		case int32, int, int64, int8, int16, float64, float32:
+		default:
+			return errors.New("参数num必须为数字类型")
+	}
+
 	conn, err := r.GetConn()
 	if err != nil{
 		return err
@@ -421,7 +438,7 @@ func ( r *RedisMgr ) Zrange( key string, start int, end int, desc string, withSc
 	}
 }
 
-//
+//删除有序集合key里面的member成员
 func ( r *RedisMgr) Zdel( key string, member string ) error {
 	conn, err := r.GetConn()
 	if err != nil{
@@ -435,7 +452,7 @@ func ( r *RedisMgr) Zdel( key string, member string ) error {
 	return conn.Send( "ZREM", key, member )
 }
 
-//
+//计算有序集合在指定分数范围内的长度
 func ( r *RedisMgr ) Zcount( key string, minSorce int, maxSorce int ) (int, error )  {
 	conn, err := r.GetConn()
 	if err != nil{
