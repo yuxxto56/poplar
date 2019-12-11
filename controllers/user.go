@@ -24,8 +24,7 @@ func (u *UserController) GetUser(){
 	//data := map[string]interface{}{"name":"lidayang","age":22}
 	sdu := new(models.StudentModel).Init()
 	//result := sdu.Insert(data)
-	result := sdu.GetById(1)
-
+	result := sdu.GetAll()
 	bytes,_ := json.Marshal(result)
 
 	//fmt.Println("result:",result)

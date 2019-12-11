@@ -18,7 +18,7 @@ var (
 type Model struct {
 	table string
 	o orm.Ormer
-	limit []int
+	limit []interface{}
 	orderBy []string
 	where map[string]interface{}
 	data  map[string]interface{}
@@ -55,13 +55,13 @@ func (m *Model) Where(param map[string]interface{}) *Model{
 
 //设置查询范围
 //使用示例 Limit(10) limit(0,10)
-func (m *Model) Limit(start int,limit ...int) *Model{
-	m.limit = make([]int,2)
+func (m *Model) Limit(start interface{},limit ...interface{}) *Model{
+	m.limit = make([]interface{},0)
     if len(limit) == 0{
-	    m.limit[0] = start
+    	m.limit = append(m.limit,start)
 	}else{
-		m.limit[0] = start
-		m.limit[1] = limit[0]
+		m.limit = append(m.limit,start)
+		m.limit = append(m.limit,limit[0])
 	}
 	return m
 }
@@ -153,17 +153,13 @@ func (m *Model) Select() []map[string]interface{}{
 	var limit string
 	if len(m.limit)>0{
 		if len(m.limit) == 1{
-			    limit = strconv.Itoa(m.limit[0])
+			    limit = strconv.Itoa(m.limit[0].(int))
 		}else{
-			if m.limit[1] == 0{
-				limit = strconv.Itoa(m.limit[0])
-			}else {
-				limit = strconv.Itoa(m.limit[0]) + "," + strconv.Itoa(m.limit[1])
-			}
+			    limit = strconv.Itoa(m.limit[0].(int)) + "," + strconv.Itoa(m.limit[1].(int))
 		}
 		limit = " LIMIT "+limit
 	}
-	sql := fmt.Sprintf("SELECT %s FROM %s %s%s%s",field,m.table,where,orderBy,limit)
+	sql := fmt.Sprintf("SELECT %s FROM %s%s%s%s",field,m.table,where,orderBy,limit)
 	m.sql = sql
 	var res []orm.Params
 	_,err := m.o.Raw(sql).Values(&res)

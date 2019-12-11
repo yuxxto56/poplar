@@ -36,7 +36,7 @@ func (s *StudentModel) GetById(id int,field ...[]string) map[string]interface{}{
 }
 
 func (s *StudentModel) GetAll() []map[string]interface{}{
-    rs := s.Model.Limit(0,5).Select()
+    rs := s.Model.Limit(2,3).Select()
     return rs
 }
 
