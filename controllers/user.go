@@ -247,8 +247,8 @@ func (u *UserController) Redis()  {
 	fmt.Print("测试切换db, 从db2拿数据：")
 	fmt.Println( redis.Int( redisDb2.Get("keydb2") )  )
 	//释放掉redisDb2
+	redisDb2.Close()
 	redisDb2 = nil
-
 
 	u.Ctx.WriteString("end")
 }

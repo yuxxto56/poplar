@@ -17,6 +17,9 @@ func main() {
 	configureRouterCase()
 	//打印环境变量
 	logs.Info("Environment Variable:MSF_ENV:",beego.BConfig.RunMode)
+	//开启平滑重启
+	beego.BConfig.Listen.Graceful = true
 	//启动服务
 	beego.Run("0.0.0.0:8000")
+
 }

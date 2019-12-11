@@ -502,3 +502,8 @@ func ( r *RedisMgr ) Zrank( key string, member string, sort string )  ( int, err
 		return redis.Int( conn.Do("ZREVRANK", key, member ) )
 	}
 }
+
+//关闭所有连接
+func ( r *RedisMgr) Close()  {
+	r.pool.Close()
+}
