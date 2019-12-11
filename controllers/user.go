@@ -8,7 +8,6 @@ import (
 	"poplar/common/models"
 	"poplar/common/toolLib"
 	"strconv"
-	"time"
 )
 
 // Operations about Users
@@ -22,13 +21,20 @@ type People struct {
 }
 
 func (u *UserController) GetUser(){
-	data := map[string]interface{}{"name":"lidayang","age":22}
-	sdu := new(models.StudentModel).Init()
-	result := sdu.Insert(data)
-	//result,_ := sdu.Model.Where(data).Delete()
-	//fmt.Println("result:",result)
-	fmt.Println("lastSql:",sdu.Model.GetLastSql())
-	fmt.Println(fmt.Sprintf("timer:%s,result:%d",time.Now(),result))
+
+
+	//result := new(logics.StudentLogic).GetAll()
+	//bytes,_ := json.Marshal(result)
+
+	s := new(models.StudentModel).Init()
+	data  := map[string]interface{}{"age":28}
+	num,_ := s.Model.Where(map[string]interface{}{"id":1}).Data(data).SetDec()
+
+	fmt.Println("result:",num)
+	fmt.Println("lastSql:",s.Model.GetLastSql())
+
+	//fmt.Println(fmt.Sprintf("timer:%s,result:%s",time.Now(),string(bytes[:])))
+	//u.Data["json"] = result
 	u.ServeJSON()
 }
 

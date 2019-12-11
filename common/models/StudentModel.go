@@ -18,25 +18,35 @@ type StudentModelField struct {
 	F_age   string `default:"age"`
 }
 
+//新增
 func (s *StudentModel) Insert(data map[string]interface{}) (int){
      result,_ := s.Model.Data(data).Insert()
 	 return result
 }
+
+//获取单条数据
+func (s *StudentModel) GetById(id int,field ...[]string) map[string]interface{}{
+	if len(field) > 0{
+		s.Model.Field(field[0])
+	}
+    rs := s.Model.Where(map[string]interface{}{
+	"id":id,
+   }).Find()
+    return rs
+}
+
+func (s *StudentModel) GetAll() []map[string]interface{}{
+    rs := s.Model.Limit(2,3).Select()
+    return rs
+}
+
+
 
 func (s *StudentModel) Init() *StudentModel{
 	functions.ReflectModel(&s.Field)
 	s.Model = base.NewModel(s.Field.T_table)
 	return s
 }
-
-//实例
-/*func NewStudentModel() *StudentModel{
-	models := &StudentModel{}
-	functions.ReflectModel(&models.Field)
-	models.Model = base.NewModel(models.Field.T_table)
-	return models
-}*/
-
 
 
 

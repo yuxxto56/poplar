@@ -1,2 +1,67 @@
-# poplar
-poplar is a HTTP web framework written in Go (Golang)
+# Poplar
+poplar is a http web framework written in golang
+# Features
+* RESTful support
+* MVC architecture
+* Modularity
+* Annotation router
+* Namespace
+* Powerful development tools
+* Full stack for Web & API
+* Rpc && Middleware
+# Quick Start
+### Download and install
+```cassandraql
+go get -u github.com/yuxxto56/poplar
+```
+### Main.go
+```cassandraql
+package main
+
+import (
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	_ "poplar/routers"
+)
+//配置路由路径大小写敏感度
+func configureRouterCase(){
+	if ok,err := beego.AppConfig.Bool("routercase");err == nil{
+		beego.BConfig.RouterCaseSensitive = ok
+	}
+}
+
+func main() {
+	//配置路由路径敏感度
+	configureRouterCase()
+	//打印环境变量
+	logs.Info("Environment Variable:MSF_ENV:",beego.BConfig.RunMode)
+	//启动服务
+	beego.Run("0.0.0.0:8000")
+}
+
+
+```
+### Build and Run
+```cassandraql
+go build main.go
+./main
+```
+# Project Structure
+```cassandraql
+common #公共文件包
+|  |-functions #定义全局函数、方法体
+|  |-models #Model层
+|  |  |-base
+|  |     |-driver.go #注册数据库引擎
+|  |     |-model.go  #基Model
+|  |-logics #Logics层
+|  |-toolLib #第三方类库
+conf #配置包
+|  |-app.conf #公共配置
+|  |-dev  #开发环境配置
+|  |-prod #生产环境配置
+|  |-test #测试环境配置
+controllers #controller层
+routers #路由包
+main.go #入口文件
+```
