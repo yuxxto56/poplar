@@ -59,7 +59,7 @@ go run create_model.go -help
   -table string #指定表名称 不可缺少
         usage mysql table name
 ```
-*生成model
+* 生成model
 ```cassandraql
 go run create_model.go -table=student
 ```
