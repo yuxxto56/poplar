@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
+	"github.com/smallnest/rpcx/client"
+	"log"
 	"poplar/common/models"
 	"poplar/common/toolLib"
 	"strconv"
@@ -241,7 +244,7 @@ func (u *UserController) Redis()  {
 
 	fmt.Println("===测试切换db=========================================")
 	var redisDb2 = &toolLib.RedisMgr{}
-	toolLib.RedisInit("2", redisDb2 )
+	toolLib.RedisInit(2, redisDb2 )
 	redisDb2.Set("keydb2", 111 )
 	redisDb2.Set("keydb2_1", 112 )
 	fmt.Print("测试切换db, 从db2拿数据：")
@@ -263,3 +266,35 @@ func (u *UserController) Logout() {
 	u.Ctx.WriteString("end")
 }
 
+func (u *UserController) Rpcx()  {
+	d := client.NewPeer2PeerDiscovery("tcp@localhost:8972", "")
+	// #2
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+	defer xclient.Close()
+	type Args struct {
+		A int
+		B int
+	}
+
+	type Reply struct {
+		C int
+	}
+	// #3
+	args := &Args{
+		A: 10,
+		B: 20,
+	}
+
+	// #4
+	reply := &Reply{}
+
+	// #5
+	err := xclient.Call(context.Background(), "Mul", args, reply)
+	if err != nil {
+		log.Fatalf("failed to call: %v", err)
+	}
+
+	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+	u.Ctx.WriteString("end")
+}
