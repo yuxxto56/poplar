@@ -6,6 +6,15 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 	"poplar/common/functions"
 	"reflect"
+	"time"
+)
+
+const (
+	// 读写超时时间 单位毫秒
+	MemcacheTimeout = 600
+
+	//最大空闲连接数
+	MemcacheMaxIdleConns = 30
 )
 
 var MemMgr *MemcacheMgr
@@ -17,15 +26,27 @@ type MemcacheMgr struct {
 }
 
 func init()  {
-	port, _ := beego.AppConfig.Int("memcache::port")
+	port, _ := beego.AppConfig.Int("memcache.port")
 	MemMgr = &MemcacheMgr{
-		Host: beego.AppConfig.String("memcache::host"),
+		Host: beego.AppConfig.String("memcache.host"),
 		Port: port,
 	}
 	MemMgr.Client = memcache.New( fmt.Sprintf( "%s:%d", MemMgr.Host, MemMgr.Port ) )
 	if MemMgr.Client == nil{
 		fmt.Println("Memcache 创建失败")
 	}
+	//设置读写超时时间
+	timeOut, err := beego.AppConfig.Int64("memcache.timeOut")
+	if err  != nil{
+		timeOut = int64( MemcacheTimeout )
+	}
+	MemMgr.Client.Timeout =  time.Duration( timeOut )  * time.Millisecond
+	//设置最大空闲连接数
+	maxIdleConns, err := beego.AppConfig.Int("memcache.maxIdleConns")
+	if err != nil{
+		maxIdleConns = MemcacheMaxIdleConns
+	}
+	MemMgr.Client.MaxIdleConns = maxIdleConns
 }
 
 
