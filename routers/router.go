@@ -4,7 +4,6 @@ package routers
 
 import (
 	"poplar/controllers"
-
 	"github.com/astaxie/beego"
 )
 
