@@ -1,3 +1,4 @@
+//生成model工具包
 package main
 
 import (
