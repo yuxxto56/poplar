@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
 	"poplar/common/functions"
+	"poplar/common/logics"
 	"poplar/common/toolLib"
 	"strconv"
 )
@@ -21,8 +22,15 @@ type People struct {
 }
 
 func (u *UserController) GetUser(){
+
+	logics := new(logics.StudentLogic)
+	result,err := logics.GetAll()
+	if err != nil{
+		functions.ErrorApp(u.Ctx,err.Error())
+	}
+	functions.OutApp(u.Ctx,result)
 	//functions.OutApp(u.Ctx,[]map[string]string{{"id":"12121"}})
-	functions.ErrorApp(u.Ctx,"字符集不能为空")
+	//functions.ErrorApp(u.Ctx,"字符集不能为空")
 }
 
 func (u *UserController) GetUser2(){
