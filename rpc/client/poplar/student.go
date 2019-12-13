@@ -7,7 +7,7 @@ import (
 type Student struct {
     Poplarbase
 }
-func (student Student)Init() Student {
+func (student *Student)Init() *Student {
     student.SetAddress()
     student.ServicePath = "Student"
     return student
