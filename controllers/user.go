@@ -21,7 +21,8 @@ type People struct {
 }
 
 func (u *UserController) GetUser(){
-	functions.OutApp(u.Ctx,[]map[string]string{{"id":"12121"}})
+	//functions.OutApp(u.Ctx,[]map[string]string{{"id":"12121"}})
+	functions.ErrorApp(u.Ctx,"字符集不能为空")
 }
 
 func (u *UserController) GetUser2(){

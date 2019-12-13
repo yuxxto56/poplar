@@ -47,6 +47,21 @@ func OutApp(ctx *context.Context,params ...interface{}){
 
 
 //错误输出
-func ErrorApp(){
-
+func ErrorApp(ctx *context.Context,errMsg string){
+	odata := make([]interface{},0)
+	maps := map[string]interface{}{
+		"error":1,
+		"errorMsg":errMsg,
+		"total":false,
+		"data":odata,
+	}
+	var content []byte
+	ctx.Output.Header("Content-Type", "application/json; charset=utf-8")
+	content,_= json.Marshal(maps)
+	jsonS := string(content)
+	if ctx.Input.Query("jsonCallback") != "" {
+		jsonS = "("+jsonS+")"
+	}
+	content  = []byte(StringsToJSON(jsonS))
+	ctx.Output.Body(content)
 }
