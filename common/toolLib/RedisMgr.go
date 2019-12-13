@@ -1,13 +1,10 @@
 package toolLib
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
-	"github.com/youtube/vitess/go/pools"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -18,181 +15,137 @@ var (
 
 
 type RedisMgr struct {
-	ctx         context.Context
-	pool        *pools.ResourcePool
+	pool        *redis.Pool
 
 }
 
-type RedisConn struct {
-	redis.Conn
-}
-
-
-func (r *RedisConn) Close() {
-	_ = r.Conn.Close()
-}
 
 func init()  {
-	RedisInit( beego.AppConfig.String("redis.db"), RedisGlobMgr )
+	db , err := beego.AppConfig.Int("redis.db")
+	if err != nil {
+		db  = 0
+	}
+	RedisInit( db, RedisGlobMgr )
 }
 
-func RedisInit( db string, redism *RedisMgr )  {
-	redism.ctx = context.Background()
-	dns := fmt.Sprintf("redis://%s:%s/%s", beego.AppConfig.String("redis.host"), beego.AppConfig.String("redis.port"), db )
-	capacity, err := beego.AppConfig.Int("redis.capacity")
+func RedisInit( db int, redism *RedisMgr )  {
+	host := fmt.Sprintf("%s:%s", beego.AppConfig.String("redis.host"), beego.AppConfig.String("redis.port") )
+
+	//最大空闲连接数
+	maxIdle, err := beego.AppConfig.Int("redis.maxIdle")
 	if err != nil{
-		capacity = 50
+		maxIdle = 50
 	}
-	maxCap, err := beego.AppConfig.Int("redis.maxCap")
+	//最大连接数
+	maxActive, err := beego.AppConfig.Int("redis.maxActive")
 	if err != nil{
-		maxCap = 80
+		maxActive = 600
 	}
-	idleTimeout, err := beego.AppConfig.Int("redis.idleTimeout")
+	//空闲链接超时时间
+	idleTimeout, err := beego.AppConfig.Int64("redis.idleTimeout")
 	if err != nil{
 		idleTimeout = 600
 	}
-	redism.pool = RedisGlobMgr.newRedisPool(dns, capacity, maxCap, time.Duration(idleTimeout)*time.Second )
-}
-
-func (r *RedisMgr ) newRedisFactory(uri string) pools.Factory {
-	return func() (pools.Resource, error) {
-		return r.redisConnFromURI(uri)
+	//如果超过最大连接，是报错，还是等待
+	wait, err := beego.AppConfig.Bool("redis.wait")
+	if err != nil{
+		wait = true
 	}
-}
+	timeout := time.Duration( idleTimeout )  * time.Second
+	//password
+	pass := beego.AppConfig.String("redis.pass")
 
-func (r *RedisMgr ) newRedisPool(uri string, capacity int, maxCapacity int, idleTimout time.Duration) *pools.ResourcePool {
-	return pools.NewResourcePool(r.newRedisFactory(uri), capacity, maxCapacity, idleTimout)
-}
-
-func (r *RedisMgr ) redisConnFromURI(uriString string) (*RedisConn, error) {
-	uri, err := url.Parse(uriString)
-	if err != nil {
-		return nil, err
-	}
-
-	var network string
-	var host string
-	var password string
-	var db string
-	var dialOptions []redis.DialOption
-
-	switch uri.Scheme {
-	case "redis", "rediss":
-		network = "tcp"
-		host = uri.Host
-		if uri.User != nil {
-			password, _ = uri.User.Password()
-		}
-		if len(uri.Path) > 1 {
-			db = uri.Path[1:]
-		}
-	case "unix":
-		network = "unix"
-		host = uri.Path
-	default:
-		return nil, errors.New("非法的Redis链接")
-	}
-	conn, err := redis.Dial(network, host, dialOptions...)
-	if err != nil {
-		return nil, err
+	redism.pool = &redis.Pool{
+		MaxIdle:maxIdle,
+		MaxActive:maxActive,
+		IdleTimeout: timeout,
+		Wait:wait,
+		Dial: func() (conn redis.Conn, e error) {
+			con, err := redis.Dial("tcp", host,
+				redis.DialPassword(pass),
+				redis.DialDatabase(db),
+				redis.DialConnectTimeout(2*time.Second),
+				redis.DialReadTimeout(2*time.Second),
+				redis.DialWriteTimeout(3*time.Second), )
+			if err != nil {
+				return nil, err
+			}
+			return con, nil
+		},
 	}
 
-	if password != "" {
-		_, err := conn.Do("AUTH", password)
-		if err != nil {
-			conn.Close()
-			return nil, err
-		}
-	}
-
-	if db != "" {
-		_, err := conn.Do("SELECT", db)
-		if err != nil {
-			conn.Close()
-			return nil, err
-		}
-	}
-
-	return &RedisConn{Conn: conn}, nil
 }
 
 
-func (r *RedisMgr) GetConn() (*RedisConn, error) {
-	resource, err := r.pool.Get(r.ctx)
-
-	if err != nil {
-		return nil, err
-	}
-	return resource.(*RedisConn), nil
-}
-
-func (r *RedisMgr ) PutConn(conn *RedisConn) {
-	r.pool.Put(conn)
+func (r *RedisMgr) GetConn() redis.Conn {
+	return  r.pool.Get()
 }
 
 
 //向一个key[队列]的尾部添加一个元素
 func (r *RedisMgr) Rpush( key string, data interface{} ) error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil {
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
+
 	}()
 	return  conn.Send("RPUSH", key, data )
 }
 
 //向一个key[队列]的头部添加一个元素
 func (r *RedisMgr) Lpush( key string, data interface{} ) error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil {
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 	return  conn.Send("LPUSH", key, data )
 }
 
 //取出队列中第一个key取元素值
 func (r *RedisMgr) Lpop( key string ) ( interface{}, error )   {
-	conn, err := r.GetConn()
-	if err != nil{
-		return nil, err
+	conn := r.GetConn()
+	if conn.Err() != nil {
+		return nil, conn.Err()
 	}
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 	return  conn.Do("LPOP", key )
 }
 
 //返回名称为key的list中start至end之间的元素（end为 -1 ，返回所有）
 func ( r *RedisMgr ) Lrange(key string, start int, end int )  ( interface{}, error )  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return nil, err
+	conn := r.GetConn()
+	if conn.Err() != nil {
+		return nil, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 	return  conn.Do("LRANGE", key, start, end )
 }
 
 //获取队列长度
 func ( r *RedisMgr ) Llen( key string ) (int , error) {
-	conn, err := r.GetConn()
-	if err != nil{
-		return 0,err
+	conn := r.GetConn()
+	if conn.Err() != nil {
+		return 0, conn.Err()
 	}
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
+
 	len, err := redis.Int( conn.Do("LLEN", key) )
 	if err != nil{
 		return 0,err
@@ -202,13 +155,12 @@ func ( r *RedisMgr ) Llen( key string ) (int , error) {
 
 // 判断一个key集合里是否存在某个value值，存在返回True
 func ( r *RedisMgr ) Scontains(key string, data interface{}) (bool, error)  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return false,err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return false,conn.Err()
 	}
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return  redis.Bool( conn.Do("SISMEMBER", key, data ) )
@@ -216,13 +168,14 @@ func ( r *RedisMgr ) Scontains(key string, data interface{}) (bool, error)  {
 
 //向集合添加元素
 func ( r *RedisMgr) Sadd(key string, data interface{})  error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return conn.Send("SADD", key, data )
@@ -231,26 +184,27 @@ func ( r *RedisMgr) Sadd(key string, data interface{})  error {
 
 //返回key集合所有的元素
 func ( r *RedisMgr )  Smembers(key string) (interface{}, error){
-	conn, err := r.GetConn()
-	if err != nil{
-		return nil,err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return nil, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 	return  conn.Do("SMEMBERS", key )
 }
 
 //在key集合中移除指定的元素
 func ( r *RedisMgr ) Srem( key string, data interface{} ) error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return  conn.Send("SREM", key, data)
@@ -258,13 +212,14 @@ func ( r *RedisMgr ) Srem( key string, data interface{} ) error {
 
 //删除指定的key
 func ( r *RedisMgr ) Clear( key string) error  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return conn.Send("DEL", key )
@@ -272,13 +227,14 @@ func ( r *RedisMgr ) Clear( key string) error  {
 
 //设置数据
 func ( r *RedisMgr) Set(key string, data interface{} ) error  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return  conn.Send("SET", key, data )
@@ -286,13 +242,13 @@ func ( r *RedisMgr) Set(key string, data interface{} ) error  {
 
 //获取数据
 func ( r *RedisMgr) Get(key string ) (interface{}, error)  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return "",err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return nil, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 
@@ -302,13 +258,14 @@ func ( r *RedisMgr) Get(key string ) (interface{}, error)  {
 
 //设置某个hashKey名称的下的keyvalue值
 func ( r *RedisMgr ) Hset( hashKey string, key string, data interface{} ) error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return conn.Send("HSET", hashKey, key, data )
@@ -317,14 +274,13 @@ func ( r *RedisMgr ) Hset( hashKey string, key string, data interface{} ) error 
 
 //得到某个hashKey名称下的key信息
 func (r *RedisMgr ) Hget( hashKey string, key string ) ( interface{}, error )  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return nil,err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return nil, conn.Err()
 	}
 
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return conn.Do("HGET", hashKey, key )
@@ -332,13 +288,14 @@ func (r *RedisMgr ) Hget( hashKey string, key string ) ( interface{}, error )  {
 
 //删除haskKey下面的key建
 func ( r *RedisMgr) Hdel( hashKey string, key string ) error  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return  conn.Send("HDEL", hashKey, key )
@@ -346,13 +303,13 @@ func ( r *RedisMgr) Hdel( hashKey string, key string ) error  {
 
 //获取hashKey的长度
 func ( r *RedisMgr ) Hlen( hashKey string ) ( int, error )  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return 0, err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return 0, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return redis.Int( conn.Do("HLEN", hashKey ) )
@@ -367,13 +324,14 @@ func ( r *RedisMgr) Hincrby ( hashKey string, key string, incrNum interface{} ) 
 			return errors.New("参数incrNum必须为数字类型")
 	}
 
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 
@@ -390,13 +348,14 @@ func ( r *RedisMgr) Incrnum( key string, num interface{} ) error {
 			return errors.New("参数num必须为数字类型")
 	}
 
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return  conn.Send("INCRBY", key, num )
@@ -405,13 +364,14 @@ func ( r *RedisMgr) Incrnum( key string, num interface{} ) error {
 
 // 设置有序集合
 func ( r *RedisMgr ) Zset( key string, score interface{}, member string )  error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 	return  conn.Send("ZADD", key, score, member )
 
@@ -419,13 +379,13 @@ func ( r *RedisMgr ) Zset( key string, score interface{}, member string )  error
 
 //获取有序集合的数据
 func ( r *RedisMgr ) Zrange( key string, start int, end int, desc string, withScores bool ) ( interface{}, error ) {
-	conn, err := r.GetConn()
-	if err != nil{
-		return nil, err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return nil, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	if strings.ToLower(desc) == "asc"{
@@ -445,13 +405,14 @@ func ( r *RedisMgr ) Zrange( key string, start int, end int, desc string, withSc
 
 //删除有序集合key里面的member成员
 func ( r *RedisMgr) Zdel( key string, member string ) error {
-	conn, err := r.GetConn()
-	if err != nil{
-		return err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return conn.Err()
 	}
+
 	defer func() {
 		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return conn.Send( "ZREM", key, member )
@@ -459,13 +420,13 @@ func ( r *RedisMgr) Zdel( key string, member string ) error {
 
 //计算有序集合在指定分数范围内的长度
 func ( r *RedisMgr ) Zcount( key string, minSorce int, maxSorce int ) (int, error )  {
-	conn, err := r.GetConn()
-	if err != nil{
-		return 0, err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return 0, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return redis.Int( conn.Do( "ZCOUNT", key, minSorce, maxSorce ) )
@@ -473,13 +434,13 @@ func ( r *RedisMgr ) Zcount( key string, minSorce int, maxSorce int ) (int, erro
 
 //获取某个分数段的集合
 func ( r *RedisMgr ) ZrangeByScore( key string, minSorce int, maxSorce int ) ( interface{}, error ) {
-	conn, err := r.GetConn()
-	if err != nil{
-		return nil, err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return nil, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	return conn.Do("ZRANGEBYSCORE", minSorce, maxSorce )
@@ -487,13 +448,13 @@ func ( r *RedisMgr ) ZrangeByScore( key string, minSorce int, maxSorce int ) ( i
 
 //获取成员member在有序集合key里面的排名
 func ( r *RedisMgr ) Zrank( key string, member string, sort string )  ( int, error ) {
-	conn, err := r.GetConn()
-	if err != nil{
-		return 0, err
+	conn := r.GetConn()
+	if conn.Err() != nil{
+		return 0, conn.Err()
 	}
+
 	defer func() {
-		conn.Flush()
-		r.PutConn(conn)
+		conn.Close()
 	}()
 
 	if strings.ToLower( sort ) == "asc"{
