@@ -7,6 +7,8 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"poplar/common/functions"
 	"poplar/common/toolLib"
+	"poplar/rpc/client/poplar"
+	_interface "poplar/rpc/interface"
 	"strconv"
 )
 
@@ -249,6 +251,18 @@ func (u *UserController) Logout() {
 	u.Ctx.WriteString("end")
 }
 
-/*func (u *UserController) Rpcx()  {
+func (u *UserController) Rpcx()  {
+	args := &_interface.Reply{}
+	reply := &[]map[string]interface{}{}
 
-}*/
+	rpcStudent := new(poplar.Student).Init()
+	defer rpcStudent.Destruct()
+
+	if err := rpcStudent.GetAll(context.Background(), args, reply); err!=nil{
+		log.Fatalf("failed to call: %v", err)
+	}
+
+
+	u.Data["json"] = reply
+	u.ServeJSON()
+}

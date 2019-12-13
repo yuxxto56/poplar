@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/smallnest/rpcx/server"
+	"poplar/routers"
 	_ "poplar/routers"
 )
 //配置路由路径大小写敏感度
@@ -13,6 +16,7 @@ func configureRouterCase(){
 }
 
 func main() {
+	go runRpc()
 	//配置路由路径敏感度
 	configureRouterCase()
 	//打印环境变量
@@ -22,4 +26,14 @@ func main() {
 	//启动服务
 	beego.Run("0.0.0.0:8000")
 
+}
+
+func runRpc() {
+	rpcServer := server.NewServer()
+	routers.InitRpcRouters(rpcServer)
+	address := fmt.Sprintf("%v:%v",beego.AppConfig.String("rpc.host"),beego.AppConfig.String("rpc.port"))
+	if err := rpcServer.Serve("tcp", address); err != nil {
+		//rpc启动失败
+		logs.Info("failed to rpcserve:%v",err)
+	}
 }
