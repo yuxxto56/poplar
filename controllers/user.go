@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
-	"github.com/smallnest/rpcx/client"
 	"log"
 	"poplar/common/models"
 	"poplar/common/toolLib"
+	"poplar/rpc/client/poplar"
 	"strconv"
 )
 
@@ -267,34 +267,16 @@ func (u *UserController) Logout() {
 }
 
 func (u *UserController) Rpcx()  {
-	d := client.NewPeer2PeerDiscovery("tcp@localhost:8972", "")
-	// #2
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
-	type Args struct {
-		A int
-		B int
-	}
+	args := &map[string]interface{}{}
+	reply := &[]map[string]interface{}{}
 
-	type Reply struct {
-		C int
-	}
-	// #3
-	args := &Args{
-		A: 10,
-		B: 20,
-	}
-
-	// #4
-	reply := &Reply{}
-
-	// #5
-	err := xclient.Call(context.Background(), "Mul", args, reply)
-	if err != nil {
+	rpcStudent := new(poplar.Student).Init()
+	if err := rpcStudent.GetAll(context.Background(), args, reply); err!=nil{
 		log.Fatalf("failed to call: %v", err)
 	}
+	//必须，释放xClient资源
+	rpcStudent.Destruct()
 
-	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-
-	u.Ctx.WriteString("end")
+	u.Data["json"] = reply
+	u.ServeJSON()
 }
