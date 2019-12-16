@@ -2,7 +2,7 @@
  * @Author: Gosin
  * @Date: 2019/12/12 15:40
  */
-package rpc
+package service
 
 import (
     "context"

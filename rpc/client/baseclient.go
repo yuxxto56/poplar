@@ -24,6 +24,6 @@ func (cli *Baseclient)GetXClient() (client.XClient) {
     return cli.xClient
 }
 
-func (cli *Baseclient)Destruct() {
+func (cli *Baseclient)Close() {
     cli.GetXClient().Close()
 }

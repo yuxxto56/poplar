@@ -267,16 +267,24 @@ func (u *UserController) Logout() {
 }
 
 func (u *UserController) Rpcx()  {
-	args := &map[string]interface{}{}
-	reply := &[]map[string]interface{}{}
-
 	rpcStudent := new(poplar.Student).Init()
-	if err := rpcStudent.GetAll(context.Background(), args, reply); err!=nil{
+	//必须，释放xClient资源
+	defer rpcStudent.Close()
+
+	//调用1
+	args1 := &map[string]interface{}{}
+	reply1 := &[]map[string]interface{}{}
+	if err := rpcStudent.GetAll(context.Background(), args1, reply1); err!=nil{
 		log.Fatalf("failed to call: %v", err)
 	}
-	//必须，释放xClient资源
-	rpcStudent.Destruct()
+	//调用2
+	args2 := &map[string]interface{}{}
+	reply2,err := rpcStudent.GetUserAll(args2);
+	if err!=nil {
+		log.Fatalf("failed to call: %v", err)
+	}
 
-	u.Data["json"] = reply
+	u.Data["json"] = reply1
+	u.Data["json"] = reply2
 	u.ServeJSON()
 }
