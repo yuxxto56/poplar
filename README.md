@@ -81,9 +81,17 @@ conf #配置包
 |  |-dev  #开发环境配置
 |  |-prod #生产环境配置
 |  |-test #测试环境配置
+lang
+|  |-const
+|  |  |-const.go #定义错误代码
+|  |-lang.go #根据错误码获取错误结构体
+|  |-lang_zh_cn.ini#错误定义文件 key=const/const.go中配置的value
 tests
 |  |-create_model.go #生成model工具
 controllers #controller层
 routers #路由包
+|  |-router.go #路由注册
+|  |-rpcRouter.go #rpc路由注册
+rpc #rpc服务或客户端
 main.go #入口文件
 ```
