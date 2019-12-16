@@ -4,7 +4,6 @@ package routers
 
 import (
 	"poplar/controllers"
-
 	"github.com/astaxie/beego"
 )
 
@@ -13,7 +12,7 @@ func init() {
 		beego.NSRouter("/user",&controllers.UserController{},"*:GetUser"),
 		beego.NSRouter("/mem", &controllers.UserController{}, "*:Memcache"),
 		beego.NSRouter("/redis", &controllers.UserController{}, "*:Redis"),
-		beego.NSRouter("/rpcx", &controllers.UserController{}, "*:Rpcx"),
+		//beego.NSRouter("/rpcx", &controllers.UserController{}, "*:Rpcx"),
     )
 	ns1 := beego.NewNamespace("/v2",
 		beego.NSRouter("/user",&controllers.UserController{},"*:GetUser2"),

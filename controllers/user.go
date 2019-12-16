@@ -7,7 +7,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
 	"log"
-	"poplar/common/models"
+	"poplar/common/functions"
+	"poplar/common/logics"
 	"poplar/common/toolLib"
 	"poplar/rpc/client/poplar"
 	"strconv"
@@ -25,20 +26,14 @@ type People struct {
 
 func (u *UserController) GetUser(){
 
-
-	//result := new(logics.StudentLogic).GetAll()
-	//bytes,_ := json.Marshal(result)
-
-	s := new(models.StudentModel).Init()
-	data  := map[string]interface{}{"age":28}
-	num,_ := s.Model.Where(map[string]interface{}{"id":1}).Data(data).SetDec()
-
-	fmt.Println("result:",num)
-	fmt.Println("lastSql:",s.Model.GetLastSql())
-
-	//fmt.Println(fmt.Sprintf("timer:%s,result:%s",time.Now(),string(bytes[:])))
-	//u.Data["json"] = result
-	u.ServeJSON()
+	logics := new(logics.StudentLogic)
+	result,err := logics.GetAll()
+	if err != nil{
+		functions.ErrorApp(u.Ctx,err.Error())
+	}
+	functions.OutApp(u.Ctx,result)
+	//functions.OutApp(u.Ctx,[]map[string]string{{"id":"12121"}})
+	//functions.ErrorApp(u.Ctx,"字符集不能为空")
 }
 
 func (u *UserController) GetUser2(){
