@@ -2,27 +2,19 @@ package functions
 
 import (
 	"encoding/json"
-	"strconv"
 	"github.com/astaxie/beego/context"
+	lang2 "poplar/lang"
 )
 
 //正确输出
 func OutApp(ctx *context.Context,params ...interface{}){
 	var msg   string
-	var total int
 	var odata interface{}
 	if len(params) > 0{
 		odata = params[0]
-	    if len(params) > 1 {
-			if _, ok := params[1].(int); ok {
-				total = params[1].(int)
-			} else {
-				total, _ = strconv.Atoi(params[1].(string))
-			}
-		}
-		if len(params) > 2{
-			if _,ok := params[2].(string);ok{
-				msg = params[2].(string)
+		if len(params) > 1{
+			if _,ok := params[1].(string);ok{
+				msg = params[1].(string)
 			}
 		}
 	}else{
@@ -31,7 +23,6 @@ func OutApp(ctx *context.Context,params ...interface{}){
 	maps := map[string]interface{}{
 		"error":0,
 		"errorMsg":msg,
-		"total":total,
 		"data":odata,
 	}
 	var content []byte
@@ -47,12 +38,13 @@ func OutApp(ctx *context.Context,params ...interface{}){
 
 
 //错误输出
-func ErrorApp(ctx *context.Context,errMsg string){
+func ErrorApp(ctx *context.Context,errCode interface{}){
 	odata := make([]interface{},0)
+	lang := &lang2.Load{}
+	errMsg := lang.GetLang(errCode.(string))
 	maps := map[string]interface{}{
-		"error":1,
+		"error":errCode,
 		"errorMsg":errMsg,
-		"total":false,
 		"data":odata,
 	}
 	var content []byte
@@ -65,3 +57,5 @@ func ErrorApp(ctx *context.Context,errMsg string){
 	content  = []byte(StringsToJSON(jsonS))
 	ctx.Output.Body(content)
 }
+
+
