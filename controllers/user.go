@@ -31,7 +31,7 @@ func (u *UserController) GetUser(){
 	if err != nil{
 		functions.ErrorApp(u.Ctx,err.Error())
 	}
-	functions.OutApp(u.Ctx,result)
+	functions.OutApp(u.Ctx,result,"success")
 	//functions.OutApp(u.Ctx,[]map[string]string{{"id":"12121"}})
 	//functions.ErrorApp(u.Ctx,"字符集不能为空")
 }
