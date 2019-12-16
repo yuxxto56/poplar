@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
-	"log"
 	"poplar/common/functions"
 	"poplar/common/logics"
 	"poplar/common/toolLib"
 	"poplar/rpc/client/poplar"
+	poplar2 "poplar/rpc/interface/poplar"
 	"strconv"
 )
 
@@ -267,19 +267,20 @@ func (u *UserController) Rpcx()  {
 	defer rpcStudent.Close()
 
 	//调用1
-	args1 := &map[string]interface{}{}
+	args1 := &poplar2.Args{A:"123",B:"456"}
 	reply1 := &[]map[string]interface{}{}
 	if err := rpcStudent.GetAll(context.Background(), args1, reply1); err!=nil{
-		log.Fatalf("failed to call: %v", err)
+		fmt.Printf("rpcx调用1错误：%+v", err)
+		// log.Fatalf("failed to call: %v", err)
 	}
 	//调用2
 	args2 := &map[string]interface{}{}
-	reply2,err := rpcStudent.GetUserAll(args2);
+	reply2,err := rpcStudent.GetUserAll(args2)
 	if err!=nil {
-		log.Fatalf("failed to call: %v", err)
+		fmt.Printf("rpcx调用2错误：%+v", err)
+		// log.Fatalf("failed to call: %v", err)
 	}
 
-	u.Data["json"] = reply1
-	u.Data["json"] = reply2
+	u.Data["json"] = map[string]interface{}{"reply1":reply1,"reply2":reply2}
 	u.ServeJSON()
 }

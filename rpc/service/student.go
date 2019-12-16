@@ -6,11 +6,17 @@ package service
 
 import (
     "context"
+    "poplar/common/logics"
+    "poplar/rpc/interface/poplar"
 )
 
 type Student struct {
 }
-func (s *Student)GetAll(ctx context.Context, args *[]map[string]interface{}, reply *[]map[string]interface{}) error {
-    //(*reply) = new(logics.StudentLogic).GetAll()
-    return nil
+func (s *Student)GetAll1(ctx context.Context, args *poplar.Args, reply *[]map[string]interface{}) (err error) {
+    (*reply),err = new(logics.StudentLogic).GetAll()
+    return err
+}
+func (s *Student)GetAll2(ctx context.Context, args *map[string]interface{}, reply *[]map[string]interface{}) (err error) {
+    (*reply),err = new(logics.StudentLogic).GetAll()
+    return err
 }

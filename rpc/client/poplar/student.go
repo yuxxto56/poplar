@@ -2,7 +2,7 @@ package poplar
 
 import (
     "context"
-    _interface "poplar/rpc/interface"
+    "poplar/rpc/interface/poplar"
 )
 
 type Student struct {
@@ -13,10 +13,10 @@ func (student *Student)Init() *Student {
     student.ServicePath = "Student"
     return student
 }
-func (student *Student)GetAll(ctx context.Context, args *_interface.Reply, reply *[]map[string]interface{}) error {
-    return student.GetXClient().Call(ctx, "GetAll", args, reply)
+func (student *Student)GetAll(ctx context.Context, args *poplar.Args, reply *[]map[string]interface{}) error {
+    return student.GetXClient().Call(ctx, "GetAll1", args, reply)
 }
 func (student *Student)GetUserAll(args *map[string]interface{}) (*[]map[string]interface{},error) {
     reply := &[]map[string]interface{}{}
-    return reply,student.GetXClient().Call(context.Background(), "GetAll", args, reply)
+    return reply,student.GetXClient().Call(context.Background(), "GetAll2", args, reply)
 }
