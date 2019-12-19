@@ -14,8 +14,8 @@ func configureRouterCase(){
 	}
 }
 
-//主执行函数
-func main() {
+//在run之前执行的动作
+func beforeRun()  {
 	//开启协程执行rpc服务
 	go runRpc()
 	//配置路由路径敏感度
@@ -23,7 +23,16 @@ func main() {
 	//打印环境变量
 	logs.Info("Environment Variable:MSF_ENV:",beego.BConfig.RunMode)
 	//开启平滑重启
-	beego.BConfig.Listen.Graceful = true
+	graceful, err := beego.AppConfig.Bool("graceful.open")
+	if err != nil{
+		graceful = false
+	}
+	beego.BConfig.Listen.Graceful = graceful
+}
+
+//主执行函数
+func main() {
+	beforeRun()
 	//启动服务
 	beego.Run("0.0.0.0:8000")
 }
