@@ -294,9 +294,10 @@ func (u *UserController) Sphinx()  {
 	}
 
 	mSphinx.Client.SetFilter("cid", []uint64{321}, false )
-	resp, err := mSphinx.Client.Query("核桃", "goods", "测试")
+	resp, err := mSphinx.Client.Query("葡萄干", "goods", "")
 
-	fmt.Println( resp, err )
+	fmt.Println( resp.Matches[0].AttrValues, err )
+	fmt.Println( resp.Matches[0].DocId, err )
 	//销毁
 	mSphinx.Destruct()
 
