@@ -345,6 +345,8 @@ github.com/siddontang/ledisdb v0.0.0-20181029004158-becf5f38d373/go.mod h1:mF1Dp
 github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d/go.mod h1:AMEsy7v5z92TR1JKMkLLoaOQk++LVnOKL3ScbJ8GNGA=
 github.com/sirupsen/logrus v1.2.0 h1:juTguoYk5qI21pwyTXY3B3Y5cOTH3ZUyZCg1v/mihuo=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
+github.com/slvmnd/gosphinx v0.0.0-20120405024113-cb925a32165b h1:ePBouD8/NF5sk+xPO1pXZf6K78Avg0QafjntR1bJ1hU=
+github.com/slvmnd/gosphinx v0.0.0-20120405024113-cb925a32165b/go.mod h1:76tHXUQzDV8IrR/4ipEf2F4JcfP1MqvsOlGe4Gsfuvk=
 github.com/smallnest/libkv-etcdv3-store v0.0.0-20191101045330-f92940446965 h1:YQtdLz+7JQdKn7f5cG+xSrSbI7X4jObx0Jy6ZzffGew=
 github.com/smallnest/libkv-etcdv3-store v0.0.0-20191101045330-f92940446965/go.mod h1:SYR75Tf6jJoZ8wZca3fqyzXorUyOwnorUYIKv4T+u9Q=
 github.com/smallnest/rpcx v0.0.0-20191209071939-37e80ff980fc h1:MNqQ9GkV78x26vQf3ZeOwtTN4J/HnQbNyUMDCHnveIc=
@@ -395,6 +397,8 @@ github.com/xtaci/kcp-go v5.4.4+incompatible h1:QIJ0a0Q0N1G20yLHL2+fpdzyy2v/Cb3PI
 github.com/xtaci/kcp-go v5.4.4+incompatible/go.mod h1:bN6vIwHQbfHaHtFpEssmWsN45a+AZwO7eyRCmEIbtvE=
 github.com/xtaci/lossyconn v0.0.0-20190602105132-8df528c0c9ae h1:J0GxkO96kL4WF+AIT3M4mfUVinOCPgf2uUWYFUzN0sM=
 github.com/xtaci/lossyconn v0.0.0-20190602105132-8df528c0c9ae/go.mod h1:gXtu8J62kEgmN++bm9BVICuT/e8yiLI2KFobd/TRFsE=
+github.com/yunge/sphinx v0.0.0-20150804231640-7962b7621b64 h1:Dq+eq7RtI4qemUtEt0DiW0kSG/5BHUSMbWujyKJ3Vuc=
+github.com/yunge/sphinx v0.0.0-20150804231640-7962b7621b64/go.mod h1:ZvtsUfX+kT9iAazljRz74CRPUO6/HDsmOHYojeNvxgc=
 go.etcd.io/bbolt v1.3.1-etcd.8 h1:6J7QAKqfFBGnU80KRnuQxfjjeE5xAGE/qB810I3FQHQ=
 go.etcd.io/bbolt v1.3.1-etcd.8/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd v3.3.13+incompatible/go.mod h1:yaeTdrJi5lOmYerz05bd8+V7KubZs8YSFZfzsF9A6aI=

@@ -10,5 +10,7 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
+	github.com/slvmnd/gosphinx v0.0.0-20120405024113-cb925a32165b
 	github.com/smallnest/rpcx v0.0.0-20191209071939-37e80ff980fc
+	github.com/yunge/sphinx v0.0.0-20150804231640-7962b7621b64
 )

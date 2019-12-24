@@ -291,3 +291,23 @@ func (u *UserController) Rpcx()  {
 	u.Data["json"] = map[string]interface{}{"reply1":reply1,"reply2":reply2}
 	u.ServeJSON()
 }
+
+
+func (u *UserController) Sphinx()  {
+	mSphinx, err := new(toolLib.SphinxMgr).GetInstance()
+	if err != nil{
+		fmt.Println(err)
+		return
+	}
+
+	mSphinx.Client.SetFilter("cid", []uint64{321}, false )
+	resp, err := mSphinx.Client.Query("葡萄干", "goods", "")
+
+	fmt.Println( resp.Matches[0].AttrValues, err )
+	fmt.Println( resp.Matches[0].DocId, err )
+	//销毁
+	mSphinx.Destruct()
+
+	u.Ctx.WriteString("end")
+
+}
