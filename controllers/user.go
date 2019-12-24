@@ -24,6 +24,13 @@ type People struct {
 	Age  int
 }
 
+//健康检测
+func (u *UserController) Health(){
+	u.Ctx.WriteString("ok")
+}
+
+
+//获取用户
 func (u *UserController) GetUser(){
 
 	logics := new(logics.StudentLogic)
