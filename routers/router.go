@@ -10,6 +10,8 @@ import (
 func init() {
 	ns := beego.NewNamespace("/v1",
 		beego.NSRouter("/user",&controllers.UserController{},"*:GetUser"),
+		beego.NSRouter("/rabbitpush",&controllers.UserController{},"*:RabbitPush"),
+		beego.NSRouter("/rabbitconsume",&controllers.UserController{},"*:RabbitConsume"),
 		beego.NSRouter("/mem", &controllers.UserController{}, "*:Memcache"),
 		beego.NSRouter("/redis", &controllers.UserController{}, "*:Redis"),
 		beego.NSRouter("/rpcx", &controllers.UserController{}, "*:Rpcx"),

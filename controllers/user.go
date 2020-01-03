@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
+	"log"
 	"poplar/common/functions"
 	"poplar/common/logics"
 	"poplar/common/toolLib"
 	"poplar/rpc/client/poplar"
 	poplar2 "poplar/rpc/interface/poplar"
 	"strconv"
+	"time"
 )
 
 // Operations about Users
@@ -28,6 +30,39 @@ type People struct {
 func (u *UserController) Health(){
 	u.Ctx.WriteString("ok")
 }
+
+func (u *UserController) RabbitPush(){
+   rabbit,_ := toolLib.NewRabbitMq()
+   content := fmt.Sprintf("Hello,%d",time.Now().Unix())
+   err := rabbit.Publish("order_exchange",content)
+   if err != nil{
+   	  fmt.Println("Error,",err.Error())
+   }
+   u.Ctx.WriteString("ok")
+}
+
+
+
+func (u *UserController) RabbitConsume(){
+	rabbit,_ := toolLib.NewRabbitMq()
+	//content := fmt.Sprintf("Hello,%d",time.Now().Unix())
+	msgs,err := rabbit.Consume("order_phone")
+	if err != nil{
+		fmt.Println("Error,",err.Error())
+	}
+	//forever := make(chan bool)
+	//go func() {
+		for d := range msgs {
+			log.Printf(" [x] %s", d.Body)
+			d.Ack(true)
+		}
+	//}()
+	log.Printf(" [*] Waiting for logs. To exit press CTRL+C")
+	//<-forever
+	u.Ctx.WriteString("ok")
+}
+
+
 
 
 //获取用户

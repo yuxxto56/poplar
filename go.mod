@@ -9,9 +9,8 @@ require (
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gomodule/redigo v2.0.0+incompatible
-	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/smallnest/rpcx v0.0.0-20191209071939-37e80ff980fc
+	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/yunge/sphinx v0.0.0-20150804231640-7962b7621b64
-	google.golang.org/appengine v1.4.0 // indirect
 )
