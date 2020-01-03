@@ -345,8 +345,6 @@ github.com/siddontang/ledisdb v0.0.0-20181029004158-becf5f38d373/go.mod h1:mF1Dp
 github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d/go.mod h1:AMEsy7v5z92TR1JKMkLLoaOQk++LVnOKL3ScbJ8GNGA=
 github.com/sirupsen/logrus v1.2.0 h1:juTguoYk5qI21pwyTXY3B3Y5cOTH3ZUyZCg1v/mihuo=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
-github.com/slvmnd/gosphinx v0.0.0-20120405024113-cb925a32165b h1:ePBouD8/NF5sk+xPO1pXZf6K78Avg0QafjntR1bJ1hU=
-github.com/slvmnd/gosphinx v0.0.0-20120405024113-cb925a32165b/go.mod h1:76tHXUQzDV8IrR/4ipEf2F4JcfP1MqvsOlGe4Gsfuvk=
 github.com/smallnest/libkv-etcdv3-store v0.0.0-20191101045330-f92940446965 h1:YQtdLz+7JQdKn7f5cG+xSrSbI7X4jObx0Jy6ZzffGew=
 github.com/smallnest/libkv-etcdv3-store v0.0.0-20191101045330-f92940446965/go.mod h1:SYR75Tf6jJoZ8wZca3fqyzXorUyOwnorUYIKv4T+u9Q=
 github.com/smallnest/rpcx v0.0.0-20191209071939-37e80ff980fc h1:MNqQ9GkV78x26vQf3ZeOwtTN4J/HnQbNyUMDCHnveIc=
