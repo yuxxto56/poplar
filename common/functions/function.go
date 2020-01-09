@@ -10,10 +10,15 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"fmt"
+	"github.com/opentracing/opentracing-go"
+	"github.com/openzipkin/zipkin-go"
+	"github.com/openzipkin/zipkin-go/reporter"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
+	zipkinhttp "github.com/openzipkin/zipkin-go/reporter/http"
+	zipkinot "github.com/openzipkin-contrib/zipkin-go-opentracing"
 )
 //md5加密
 func HashMd5(str string) string{
@@ -114,3 +119,23 @@ func StringsToJSON(str string) string {
 }
 
 
+func NewReporter() reporter.Reporter{
+	reporter := zipkinhttp.NewReporter("http://127.0.0.1:9411/api/v2/spans")
+	//defer reporter.Close()
+
+	endpoint, err := zipkin.NewEndpoint("Poplar业务", "127.0.0.1:8000")
+	if err != nil {
+		fmt.Println("unable to create local endpoint: %+v\n", err)
+	}
+
+	// initialize our tracer
+	nativeTracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	if err != nil {
+		fmt.Println("unable to create tracer: %+v\n", err)
+	}
+	// use zipkin-go-opentracing to wrap our tracer
+	tracer := zipkinot.Wrap(nativeTracer)
+	//optionally set as Global OpenTracing tracer instance
+	opentracing.SetGlobalTracer(tracer)
+	return reporter
+}

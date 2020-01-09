@@ -7,6 +7,7 @@ import (
 )
 
 type StudentLogic struct{
+
 }
 
 func (s *StudentLogic) GetAll() ([]map[string]interface{},error){

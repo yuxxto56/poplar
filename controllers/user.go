@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
@@ -10,8 +9,9 @@ import (
 	"poplar/common/functions"
 	"poplar/common/logics"
 	"poplar/common/toolLib"
-	"poplar/rpc/client/poplar"
-	poplar2 "poplar/rpc/interface/poplar"
+	//"poplar/rpc/client/poplar"
+	//poplar2 "poplar/rpc/interface/poplar"
+	"git.shutung.com/kc/rpcinterface/client/servicea"
 	"strconv"
 	"time"
 )
@@ -304,26 +304,26 @@ func (u *UserController) Logout() {
 }
 
 func (u *UserController) Rpcx()  {
-	rpcStudent := new(poplar.Student).Init()
+	rpcStudent := new(servicea.Sa).Init()
 	//必须，释放xClient资源
 	defer rpcStudent.Close()
-
 	//调用1
-	args1 := &poplar2.Args{A:"123",B:"456"}
-	reply1 := &[]map[string]interface{}{}
-	if err := rpcStudent.GetAll(context.Background(), args1, reply1); err!=nil{
+	var reply string
+	var uid uint
+	uid = 1
+	//ctx := context.Background()
+	if err := rpcStudent.GetName(u.Ctx.Request.Context(), &uid, &reply ); err!=nil{
 		fmt.Printf("rpcx调用1错误：%+v", err)
-		// log.Fatalf("failed to call: %v", err)
-	}
-	//调用2
-	args2 := &map[string]interface{}{}
-	reply2,err := rpcStudent.GetUserAll(args2)
-	if err!=nil {
-		fmt.Printf("rpcx调用2错误：%+v", err)
-		// log.Fatalf("failed to call: %v", err)
 	}
 
-	u.Data["json"] = map[string]interface{}{"reply1":reply1,"reply2":reply2}
+	if err := rpcStudent.GetName(u.Ctx.Request.Context(), &uid, &reply ); err!=nil{
+		fmt.Printf("rpcx调用1错误：%+v", err)
+	}
+
+
+	//fmt.Println(span)
+	//span.Finish()
+	u.Data["json"] = map[string]string{"user":reply}
 	u.ServeJSON()
 }
 

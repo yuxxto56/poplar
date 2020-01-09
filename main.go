@@ -5,7 +5,9 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/smallnest/rpcx/server"
+	"poplar/common/functions"
 	"poplar/routers"
+	_ "poplar/common/filter"
 )
 //配置路由路径大小写敏感度
 func configureRouterCase(){
@@ -33,6 +35,8 @@ func beforeRun()  {
 //主执行函数
 func main() {
 	beforeRun()
+	rp := functions.NewReporter()
+	defer rp.Close()
 	//启动服务
 	beego.Run("0.0.0.0:8000")
 }
